@@ -21,7 +21,6 @@ namespace intelligent {
 			int index = uid.Sample();
 			variables[ index ]->Sample();
 		}
-		
 	}
 	
 }

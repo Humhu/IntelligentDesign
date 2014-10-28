@@ -3,14 +3,14 @@
 
 #include <memory>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 namespace intelligent {
 
 	class GibbsField;
 	class GibbsVariable;
 
-	/*! \note This Gibbs field implementation uses a graph with runtime edge lookup for speed.
+	/*! \note This Gibbs field implementation uses runtime lookup for speed.
 	 * I expect the fields to be copied a lot, so we trade off sampling speed for copy
 	 * construction complexity. Specifically, variables (nodes) and potentials (edges) do
 	 * not store pointers to each other. All operations requiring this information depend
@@ -88,10 +88,13 @@ namespace intelligent {
 		/*! \brief Get the potentials that operate on this variable. */
 		std::vector<GibbsPotential::Ptr> GetPotentials() const;
 
+		/*! \brief Adds an additional potential to this variable. */
+		void AddPotential( unsigned int potID );
+
 	private:
 
 		/*! \brief The IDs corresponding to this variable's potentials. */
-		const std::vector<unsigned int> potentialIDs;
+		std::vector<unsigned int> potentialIDs;
 		
 	};
 	
@@ -112,8 +115,8 @@ namespace intelligent {
 		
 	private:
 
-		typedef std::map <unsigned int, GibbsVariable::Ptr> VariableMap;
-		typedef std::map <unsigned int, GibbsPotential::Ptr> PotentialMap;
+		typedef std::unordered_map <unsigned int, GibbsVariable::Ptr> VariableMap;
+		typedef std::unordered_map <unsigned int, GibbsPotential::Ptr> PotentialMap;
 		
 		/*! \brief Map from variable IDs to pointers. */
 		VariableMap variables;

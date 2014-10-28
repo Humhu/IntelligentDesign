@@ -59,6 +59,10 @@ namespace intelligent {
 		}
 		return potentials;
 	}
+
+	void GibbsVariable::AddPotential( unsigned int potID ) {
+		potentialIDs.push_back( potID );
+	}
 		
 	GibbsField::GibbsField() {}
 
