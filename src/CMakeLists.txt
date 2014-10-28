@@ -2,7 +2,8 @@
 
 set( IntelligentDesign_SOURCES
 	 GibbsField.cpp
-     )
+	 MCMCSampler.cpp
+	 RandomDistributions.cpp )
 
 
 add_library( intelligent SHARED ${IntelligentDesign_SOURCES} )
