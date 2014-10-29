@@ -15,6 +15,10 @@ namespace intelligent {
 	 * construction complexity. Specifically, variables (nodes) and potentials (edges) do
 	 * not store pointers to each other. All operations requiring this information depend
 	 * on ID-based lookup from the owning field.
+	 *
+	 * Note that we assume IDs are assigned sequentially, starting from 0. This means
+	 * that the largest ID in a field is the number of variables minus one, and the same
+	 * for potentials.
 	 */
 	
 	/*! \brief Superclass for all potentials in a Gibbs field. Equivalent to an
@@ -68,9 +72,8 @@ namespace intelligent {
 		/*! \brief This variable's field-unique ID. */
 		const unsigned int id;
 
-		/*! \brief Construct a new variable with specified ID and potential IDs. */
-		GibbsVariable( const GibbsField& _field, unsigned int _id,
-					   const std::vector<unsigned int>& _potentialIDs );
+		/*! \brief Construct a new variable with specified ID. */
+		GibbsVariable( const GibbsField& _field, unsigned int _id );
 
 		/*! \brief Copy a variable but assign it to a different field. */
 		GibbsVariable( const GibbsField& _field, const GibbsVariable& other );
@@ -109,9 +112,11 @@ namespace intelligent {
 
 		GibbsVariable::Ptr GetVariable( unsigned int id ) const;
 		std::vector<GibbsVariable::Ptr> GetVariables() const;
-
+		std::size_t NumVariables() const;
+		
 		GibbsPotential::Ptr GetPotential( unsigned int id ) const;
 		std::vector<GibbsPotential::Ptr> GetPotentials() const;
+		std::size_t NumPotentials() const;
 		
 	private:
 

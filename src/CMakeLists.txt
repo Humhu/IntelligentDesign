@@ -1,6 +1,8 @@
 #CMake file for src folder
 
 set( IntelligentDesign_SOURCES
+	 AssemblyConstructor.cpp
+	 DiscretePoint.cpp
 	 GibbsField.cpp
 	 Lattice.cpp
 	 MCMCSampler.cpp

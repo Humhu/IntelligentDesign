@@ -2,28 +2,13 @@
 #define _LATTICE_CONSTRUCTOR_H_
 
 #include "intelligent/GibbsField.h"
+#include "intelligent/DiscretePoint.h"
 
 #include <tuple>
 
 #include <boost/function.hpp>
 
 namespace intelligent {
-
-	/*! \brief Discrete 3D coordinates. */
-	struct DiscretePoint3 {
-		int x;
-		int y;
-		int z;
-
-		DiscretePoint3();
-
-		bool operator==( const DiscretePoint3& other ) const;
-	};
-
-	/*! \brief Hashing functor for unordered_map. */
-	struct DiscretePoint3Hash {
-		std::size_t operator()( const DiscretePoint3& in ) const;
-	};
 	
 	/*! \brief Prints the point as "(x, y, z)" */
 	std::ostream& operator<<( std::ostream& os, const DiscretePoint3& point );
@@ -49,12 +34,14 @@ namespace intelligent {
 
 		/*! \brief Retrieve all node IDs. Order is undefined. */
 		std::vector<unsigned int> GetNodeIDs() const;
+
+		/*! \brief Return this lattice's bounding box. */
+		DiscreteBox3 GetBoundingBox() const;
 		
 	private:
 
 		typedef std::unordered_map <unsigned int, DiscretePoint3> IDPositionMap;
-		typedef std::unordered_map <DiscretePoint3, unsigned int,
-									DiscretePoint3Hash > PositionIDMap;
+		typedef std::unordered_map <DiscretePoint3, unsigned int> PositionIDMap;
 		
 		/*! \brief Map from node IDs to positions. */
 		IDPositionMap idPositionMap;
@@ -63,12 +50,7 @@ namespace intelligent {
 		PositionIDMap positionIDMap;
 
 		/*! \brief The bounding box around this lattice. */
-		int minX;
-		int maxX;
-		int minY;
-		int maxY;
-		int minZ;
-		int maxZ;
+		DiscreteBox3 boundingBox;
 
 	};
 	

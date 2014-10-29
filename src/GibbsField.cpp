@@ -29,16 +29,13 @@ namespace intelligent {
 		return clique;
 	}
 		
-	GibbsVariable::GibbsVariable( const GibbsField& _field, unsigned int _id,
-								  const std::vector<unsigned int>& _potentialIDs ) :
+	GibbsVariable::GibbsVariable( const GibbsField& _field, unsigned int _id ) :
 		field( _field ),
-		id( _id ),
-		potentialIDs( _potentialIDs ) {}
+		id( _id ) {}
 
 	GibbsVariable::GibbsVariable( const GibbsField& _field, const GibbsVariable& other ) :
 		field( _field ),
-		id( other.id ),
-		potentialIDs( other.potentialIDs ) {}
+		id( other.id ) {}
 
 	double GibbsVariable::CalculatePotential() {
 
@@ -122,6 +119,14 @@ namespace intelligent {
 			pots.push_back( item.second );
 		}
 		return pots;
+	}
+
+	std::size_t GibbsField::NumVariables() const {
+		return variables.size();
+	}
+
+	std::size_t GibbsField::NumPotentials() const {
+		return potentials.size();
 	}
 	
 }
