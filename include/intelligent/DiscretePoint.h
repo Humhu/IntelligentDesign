@@ -4,6 +4,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/function.hpp>
 
+#include <ostream>
 #include <vector>
 
 namespace intelligent {
@@ -24,6 +25,9 @@ namespace intelligent {
 	
 	DiscretePoint3 operator+( const DiscretePoint3& first, const DiscretePoint3& second );
 	DiscretePoint3 operator-( const DiscretePoint3& first, const DiscretePoint3& second );
+
+	/*! \brief Prints the point as "(x, y, z)" */
+	std::ostream& operator<<( std::ostream& os, const DiscretePoint3& point );
 	
 	/*! \brief Discrete bounding box in 3D. */
 	struct DiscreteBox3 {

@@ -36,6 +36,12 @@ include_directories( ${Boost_INCLUDE_DIRS} )
 list( APPEND IntelligentDesign_LIBRARIES ${Boost_LIBRARIES} )
 list( APPEND IntelligentDesign_LIBRARIES "-lboost_thread" ) # Need to force linking against threads
 
+# VTK for visualization
+find_package( VTK REQUIRED )
+message( STATUS "VTK found at: ${VTK_INCLUDE_DIRS}")
+include_directories( ${VTK_INCLUDE_DIRS} )
+list( APPEND IntelligentDesign_LIBRARIES ${VTK_LIBRARIES} )
+
 set( IntelligentDesign_INCLUDE_DIRECTORIES "${PROJECT_SOURCE_DIR}/include" )
 include_directories( ${IntelligentDesign_INCLUDE_DIRECTORIES} )
 

@@ -9,9 +9,6 @@
 #include <boost/function.hpp>
 
 namespace intelligent {
-	
-	/*! \brief Prints the point as "(x, y, z)" */
-	std::ostream& operator<<( std::ostream& os, const DiscretePoint3& point );
 
 	/*! \brief Arranges node IDs into a 3D cubical lattice. */
 	class Lattice {

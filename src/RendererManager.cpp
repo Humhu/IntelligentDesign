@@ -1,0 +1,270 @@
+#include "intelligent/RendererManager.h"
+
+#include <vtkArrowSource.h>
+#include <vtkTransform.h>
+#include <vtkAxesActor.h>
+#include <vtkCubeSource.h>
+#include <vtkLineSource.h>
+#include <vtkPlaneSource.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkProperty.h>
+
+#include <stdexcept>
+
+#include <boost/foreach.hpp>
+
+namespace intelligent {
+
+	Color::Color() :
+		red( 0 ), green( 0 ), blue( 0 ) {}
+		
+	Color::Color( double r, double g, double b ) :
+		red( r ), green( g ), blue( b ) {}
+	
+	RenderRequest::RenderRequest() {
+		color = Color( 1.0, 1.0, 1.0 );
+		useLighting = true;
+		shader = RENDER_SHADER_FLAT;
+		representation = RENDER_GEOM_SURFACE;
+		ambientLighting = 1.0;
+		diffuseLighting = 1.0;
+		specularLighting = 1.0;
+		specularPower = 1.0;
+		opacity = 1.0;
+		showEdges = true;
+		edgeColor = Color( 0.0, 0.0, 0.0 );
+	}
+	
+	RenderRequestVisitor::RenderRequestVisitor( RendererManager& _manager ) :
+		manager( _manager ) {}
+
+	// TODO Reduce code duplication in following operator()s
+	void RenderRequestVisitor::operator()( const CubeRenderRequest& request ) {
+		
+		vtkCubeSource* cube;
+		vtkSmartPointer<vtkActor> actor;
+
+		if( manager.registry.count( request.id ) == 0 ) {
+
+			vtkSmartPointer<vtkCubeSource> cu = vtkSmartPointer<vtkCubeSource>::New();
+			vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
+			actor = vtkSmartPointer<vtkActor>::New();
+
+			pdm->SetInputConnection( cu->GetOutputPort() );
+			actor->SetMapper( pdm );
+			manager.renderer->AddActor( actor );
+			
+			RendererManager::RenderRegistration registration;
+			registration.algorithm = cu;
+			registration.mapper = pdm;
+			registration.actor = actor;
+			manager.registry[ request.id ] = registration;
+
+			cube = cu.GetPointer();
+		}
+		else {
+			RendererManager::RenderRegistration registration = manager.registry[ request.id ];
+
+			actor = registration.actor;
+			cube = dynamic_cast<vtkCubeSource*>( registration.algorithm.GetPointer() );
+		}
+
+		cube->SetCenter( request.center[0], request.center[1], request.center[2] );
+		cube->SetXLength( request.lengths[0] );
+		cube->SetYLength( request.lengths[1] );
+		cube->SetZLength( request.lengths[2] );
+
+		SetActorProperties( actor, request );
+		
+	}
+
+	void RenderRequestVisitor::operator()( const LineRenderRequest& request ) {
+
+		vtkLineSource* line;
+		vtkSmartPointer<vtkActor> actor;
+
+		if( manager.registry.count( request.id ) == 0 ) { 
+
+			vtkSmartPointer<vtkLineSource> li = vtkSmartPointer<vtkLineSource>::New();
+			vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
+			actor = vtkSmartPointer<vtkActor>::New();
+
+			pdm->SetInputConnection( li->GetOutputPort() );
+			actor->SetMapper( pdm );
+			manager.renderer->AddActor( actor );
+
+			RendererManager::RenderRegistration registration;
+			registration.algorithm = li;
+			registration.mapper = pdm;
+			registration.actor = actor;
+			manager.registry[ request.id ] = registration;
+
+			line = li.GetPointer();
+		}
+		else {
+			RendererManager::RenderRegistration registration = manager.registry[ request.id ];
+
+			actor = registration.actor;
+			line = dynamic_cast<vtkLineSource*>( registration.algorithm.GetPointer() );
+		}
+
+		line->SetPoint1( request.start[0], request.start[1], request.start[2] );
+		line->SetPoint2( request.finish[0], request.finish[1], request.finish[2] );
+
+		SetActorProperties( actor, request );
+		
+	}
+
+	void RenderRequestVisitor::operator()( const PlaneRenderRequest& request ) {
+
+		vtkPlaneSource* plane;
+		vtkSmartPointer<vtkActor> actor;
+		
+		if( manager.registry.count( request.id ) == 0 ) {
+			
+			vtkSmartPointer<vtkPlaneSource> pl = vtkSmartPointer<vtkPlaneSource>::New();
+			vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
+			actor = vtkSmartPointer<vtkActor>::New();
+			
+			pdm->SetInputConnection( pl->GetOutputPort() );
+			actor->SetMapper( pdm );
+			manager.renderer->AddActor( actor );
+			
+			RendererManager::RenderRegistration registration;
+			registration.algorithm = pl;
+			registration.mapper = pdm;
+			registration.actor = actor;
+			manager.registry[ request.id ] = registration;
+			
+			plane = pl.GetPointer();
+		}
+		else {
+			RendererManager::RenderRegistration registration = manager.registry[ request.id ];
+			
+			actor = registration.actor;
+			plane = dynamic_cast<vtkPlaneSource*>( registration.algorithm.GetPointer() );
+		}
+		
+		plane->SetOrigin( request.center[0], request.center[1], request.center[2] );
+		plane->SetPoint1( request.center[0] + request.lengths[0], request.center[1],
+						  request.center[2] );
+		plane->SetPoint2( request.center[0], request.center[1] + request.lengths[1],
+						  request.center[2] );
+
+		plane->SetCenter( request.center[0], request.center[1], request.center[2] );
+		plane->SetNormal( request.normal[0], request.normal[1], request.normal[2] );
+		
+		SetActorProperties( actor, request );
+		
+	}
+
+	void RenderRequestVisitor::SetActorProperties( vtkSmartPointer<vtkActor>& actor,
+												   const RenderRequest& request ) {
+
+		vtkProperty* property = actor->GetProperty();
+
+		property->SetLighting( request.useLighting );
+
+		switch( request.shader ) {
+			case RENDER_SHADER_FLAT:
+				property->SetInterpolationToFlat();
+				break;
+			case RENDER_SHADER_GOURAUD:
+				property->SetInterpolationToGouraud();
+				break;
+			case RENDER_SHADER_PHONG:
+				property->SetInterpolationToPhong();
+				break;
+			default:
+				throw std::runtime_error( "Invalid render shader type." );
+		}
+
+		switch( request.representation ) {
+			case RENDER_GEOM_POINTS:
+				property->SetRepresentationToPoints();
+				break;
+			case RENDER_GEOM_WIREFRAME:
+				property->SetRepresentationToWireframe();
+				break;
+			case RENDER_GEOM_SURFACE:
+				property->SetRepresentationToSurface();
+				break;
+		}
+
+		property->SetColor( request.color.red, request.color.green, request.color.blue );
+		property->SetOpacity( request.opacity );
+	}
+
+	InteractorTimerCallback* InteractorTimerCallback::New() {
+		InteractorTimerCallback *cb = new InteractorTimerCallback;
+		return cb;
+	}
+
+	void InteractorTimerCallback::SetCallback( boost::function<void()> _callback ) {
+		callback = _callback;
+	}
+
+	void InteractorTimerCallback::Execute( vtkObject* caller, unsigned long eventID, void* callData ) {
+		if( vtkCommand::TimerEvent != eventID ) { return; }
+		
+		callback();
+	}
+		
+	RendererManager::RendererManager( const std::string& _name ) :
+		name( _name ),
+		renderer( vtkRenderer::New() ),
+		renderWindow( vtkRenderWindow::New() ),
+		renderInteractor( vtkXRenderWindowInteractor::New() ) {
+
+		XInitThreads();
+		XtToolkitInitialize(); // TODO Do only once?
+		xAppContext = XtCreateApplicationContext();
+			
+		renderWindow->AddRenderer( renderer );
+		renderWindow->SetWindowName( name.c_str() );
+
+		renderer->SetBackground( 0.3, 0.2, 0.1 );
+		
+		renderInteractor->SetRenderWindow( renderWindow );
+		renderInteractor->Initialize( xAppContext );
+		vtkSmartPointer<InteractorTimerCallback> cb =
+			vtkSmartPointer<InteractorTimerCallback>::New();
+		cb->SetCallback( boost::bind( &RendererManager::ProcessRequestQueue, this ) );
+		renderInteractor->AddObserver( vtkCommand::TimerEvent, cb );
+		renderInteractor->CreateRepeatingTimer( 100 );
+
+		renderWindow->Render();
+
+ 		interactorThread =
+ 			boost::thread( boost::bind( &RendererManager::InteractorLoop, this ) );
+	}
+
+	void RendererManager::QueueRenderRequest( RenderRequestVariant& request ) {
+
+		boost::unique_lock<boost::mutex> lock( queueMutex );
+		requestQueue.push_back( request );
+
+	}
+
+	void RendererManager::ProcessRequestQueue() {
+
+		boost::unique_lock<boost::mutex> lock( queueMutex );
+		if( requestQueue.empty() ) {
+			return;
+		}
+		
+		RenderRequestVisitor visitor( *this );
+
+		BOOST_FOREACH( RenderRequestVariant& variant, requestQueue ) {
+			boost::apply_visitor( visitor, variant );
+		}
+		requestQueue.clear();
+		
+		renderWindow->Render();
+	}
+
+	void RendererManager::InteractorLoop() {
+		XtAppMainLoop( xAppContext );
+	}
+	
+}

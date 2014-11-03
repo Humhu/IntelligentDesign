@@ -10,10 +10,13 @@ namespace intelligent {
 		BLOCK_THIN		// Thin middle column voxel
 	};
 	
-	class DiscreteComponent {
+	class DiscreteComponent : public GibbsVariable {
 	public:
 
-		DiscreteComponent( const GibbsField& _field, 
+		BlockVariable::BlockVariable( const GibbsField& _field,
+									  unsigned int id ) :
+			GibbsVariable( _field, id ) {}
+		
 	};
 	
 }

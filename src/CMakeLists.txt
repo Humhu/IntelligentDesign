@@ -6,8 +6,8 @@ set( IntelligentDesign_SOURCES
 	 GibbsField.cpp
 	 Lattice.cpp
 	 MCMCSampler.cpp
-	 RandomDistributions.cpp )
-
+	 RandomDistributions.cpp
+	 RendererManager.cpp )
 
 add_library( intelligent SHARED ${IntelligentDesign_SOURCES} )
 

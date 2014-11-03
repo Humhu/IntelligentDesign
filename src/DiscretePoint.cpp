@@ -39,6 +39,11 @@ namespace intelligent {
 		sum.z = first.z - second.z;
 		return sum;
 	}
+
+	std::ostream& operator<<( std::ostream& os, const DiscretePoint3& point ) {
+		os << "(" << point.x << ", " << point.y << ", " << point.z << ")";
+		return os;
+	}
 	
 	DiscreteBox3::DiscreteBox3() :
 	minX( std::numeric_limits<int>::max() ),
