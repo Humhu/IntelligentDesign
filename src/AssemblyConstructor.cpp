@@ -21,6 +21,7 @@ namespace intelligent {
 		// this slot at that point can construct a potential.
 		DiscreteBox3::Operator op =
 			boost::bind( &AssemblySlot::CheckPoint, this, field, lattice, added, _1 );
+			
 		centeredBox.Iterate( op );
 	}
 	

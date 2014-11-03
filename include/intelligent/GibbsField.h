@@ -100,10 +100,6 @@ namespace intelligent {
 		std::vector<unsigned int> potentialIDs;
 		
 	};
-
-	class BlockVariable : public GibbsVariable {
-
-	};
 	
 	class GibbsField {
 	public:
