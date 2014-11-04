@@ -1,24 +1,30 @@
 #include "intelligent/MCMCSampler.h"
 
+#include <cassert>
+
+#include <random>
+
 namespace intelligent {
 
 	MCMCSampler::MCMCSampler() :
-		uid( 0, 1 ) {}
+		generator(rd()) {}
 
 	void MCMCSampler::SeedDistribution() {
 
-		uid.SetSeed( clock() );
+		generator.seed(rd());
 	}
 		
 	void MCMCSampler::Sample( GibbsField& field, unsigned int numSamples ) {
 
 		// First pull nodes to initialize random distribution
 		std::vector<GibbsVariable::Ptr> variables = field.GetVariables();
-		uid.SetBounds( 0, variables.size() );
+		assert(variables.size() > 0);
+		std::uniform_int_distribution<> uid( 0, variables.size()-1 );
 		
 		for( unsigned int i = 0 ; i < numSamples; i++ ) {
 
-			int index = uid.Sample();
+			int index = uid(generator);
+			assert(variables[index] != nullptr);
 			variables[ index ]->Sample();
 		}
 	}
