@@ -209,12 +209,36 @@ namespace intelligent {
 		
 		callback();
 	}
+
+	void KeyPressInteractorStyle::OnKeyPress() {
+	
+			// Get the keypress
+			vtkRenderWindowInteractor *rwi = this->Interactor;
+			std::string key = rwi->GetKeySym();
+			
+			// TODO Call a more general key checking callback instead
+			if(key == "s") {
+				callback();
+			}
+			
+			// Forward events
+			vtkInteractorStyleTrackballCamera::OnKeyPress();
+	}
+
+	void KeyPressInteractorStyle::SetCallback( boost::function<void()> _callback ) {
+		callback = _callback;
+	}
 		
 	RendererManager::RendererManager( const std::string& _name ) :
 		name( _name ),
 		renderer( vtkRenderer::New() ),
 		renderWindow( vtkRenderWindow::New() ),
-		renderInteractor( vtkXRenderWindowInteractor::New() ) {
+		renderInteractor( vtkXRenderWindowInteractor::New() ),
+		windowToImage( vtkWindowToImageFilter::New() ),
+		pngWriter( vtkPNGWriter::New() ),
+		keypressStyle( vtkSmartPointer<KeyPressInteractorStyle>::New() ),
+		screenshotCounter( 0 ),
+		screenshotPrefix( "Screenshot" ) {
 
 		XInitThreads();
 		XtToolkitInitialize(); // TODO Do only once?
@@ -223,7 +247,7 @@ namespace intelligent {
 		renderWindow->AddRenderer( renderer );
 		renderWindow->SetWindowName( name.c_str() );
 
-		renderer->SetBackground( 0.3, 0.2, 0.1 );
+		renderer->SetBackground( 0.2, 0.2, 0.2 );
 		
 		renderInteractor->SetRenderWindow( renderWindow );
 		renderInteractor->Initialize( xAppContext );
@@ -232,7 +256,20 @@ namespace intelligent {
 		cb->SetCallback( boost::bind( &RendererManager::ProcessRequestQueue, this ) );
 		renderInteractor->AddObserver( vtkCommand::TimerEvent, cb );
 		renderInteractor->CreateRepeatingTimer( 100 );
+		renderInteractor->SetInteractorStyle( keypressStyle );
+		
+		keypressStyle->SetCurrentRenderer(renderer);
+		keypressStyle->SetCallback( boost::bind( &RendererManager::CaptureScreenshot, this ) );
+		
+		// Screenshot setup
+		windowToImage->SetInput(renderWindow);
+		windowToImage->SetInputBufferTypeToRGBA(); //also record the alpha (transparency) channel
+		windowToImage->ReadFrontBufferOff(); // read from the back buffer
+		SetScreenshotMagnification( 1 );
+		
+		pngWriter->SetInputConnection(windowToImage->GetOutputPort());
 
+		// Initial render update
 		renderWindow->Render();
 
  		interactorThread =
@@ -263,8 +300,39 @@ namespace intelligent {
 		renderWindow->Render();
 	}
 
+	void RendererManager::Clear() {
+
+		BOOST_FOREACH( const RegistrationMap::value_type& item, registry ) {
+			renderer->RemoveActor( item.second.actor );
+		}
+		registry.clear();
+	}
+
+	void RendererManager::SetScreenshotPrefix( const std::string& _prefix ) {
+		screenshotPrefix = _prefix;
+	}
+	
+	void RendererManager::SetScreenshotMagnification( unsigned int mag ) {
+		windowToImage->SetMagnification( mag );
+	}
+	
 	void RendererManager::InteractorLoop() {
 		XtAppMainLoop( xAppContext );
+	}
+
+	void RendererManager::CaptureScreenshot() {
+
+		windowToImage->Modified();
+		windowToImage->Update();
+
+		std::stringstream ss;
+		ss << screenshotPrefix << screenshotCounter << ".png";
+		screenshotCounter++;
+
+		std::cout << "Screenshot saved to " << ss.str() << std::endl;
+		
+		pngWriter->SetFileName( ss.str().c_str() );
+		pngWriter->Write();
 	}
 	
 }
