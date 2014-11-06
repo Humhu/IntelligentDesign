@@ -2,7 +2,8 @@
 #define _MCMC_SAMPLER_H_
 
 #include "intelligent/GibbsField.h"
-#include "intelligent/RandomDistributions.h"
+
+#include <random>
 
 namespace intelligent {
 
@@ -20,8 +21,9 @@ namespace intelligent {
 		void Sample( GibbsField& field, unsigned int numSamples = 1 );
 
 	private:
-
-		UniformIntegerDistribution uid;
+		
+		std::random_device rd;
+		std::mt19937 generator;
 		
 	};
 	

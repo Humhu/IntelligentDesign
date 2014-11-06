@@ -31,10 +31,11 @@ include_directories( ${EIGEN_INCLUDE_DIRS} )
 find_package( Threads REQUIRED )
 list( APPEND IntelligentDesign_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} )
 
-find_package( Boost REQUIRED )
+find_package( Boost 1.46 REQUIRED
+	COMPONENTS thread system)
 include_directories( ${Boost_INCLUDE_DIRS} )
+message( STATUS "Boost found at: ${Boost_LIBRARIES}" )
 list( APPEND IntelligentDesign_LIBRARIES ${Boost_LIBRARIES} )
-list( APPEND IntelligentDesign_LIBRARIES "-lboost_thread" "-lboost_system") # Need to force linking against threads
 
 # VTK for visualization
 find_package( VTK REQUIRED )

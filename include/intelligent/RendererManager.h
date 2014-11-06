@@ -9,6 +9,10 @@
 #include <vtkMapper.h>
 #include <vtkAlgorithm.h>
 #include <vtkCommand.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkPNGWriter.h>
+#include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkObjectFactory.h>
 
 #include <boost/variant.hpp>
 #include <boost/thread.hpp>
@@ -113,6 +117,22 @@ namespace intelligent {
 		boost::function<void()> callback;
 		
 	};
+
+	class KeyPressInteractorStyle : public vtkInteractorStyleTrackballCamera {
+	public:
+		static KeyPressInteractorStyle* New();
+		vtkTypeMacro(KeyPressInteractorStyle, vtkInteractorStyleTrackballCamera);
+		
+		virtual void OnKeyPress();
+
+		void SetCallback( boost::function<void()> _callback );
+
+	private:
+
+		boost::function<void()> callback;
+		
+	};
+	vtkStandardNewMacro(KeyPressInteractorStyle);
 	
 	class RendererManager {
 
@@ -125,17 +145,29 @@ namespace intelligent {
 		
 		RendererManager( const std::string& _name );
 
+		void Clear();
 		void QueueRenderRequest( RenderRequestVariant& request );
+
+		void SetScreenshotPrefix( const std::string& _prefix );
+		void SetScreenshotMagnification( unsigned int mag );
 		
 	private:
 
 		boost::mutex queueMutex;
 		std::deque<RenderRequestVariant> requestQueue;
-		
+
+		// Base rendering objects
 		vtkSmartPointer<vtkRenderer> renderer;
 		vtkSmartPointer<vtkRenderWindow> renderWindow;
 		vtkSmartPointer<vtkXRenderWindowInteractor> renderInteractor;
 
+		// Screenshot objects
+		vtkSmartPointer<vtkWindowToImageFilter> windowToImage;
+		vtkSmartPointer<vtkPNGWriter> pngWriter;
+		vtkSmartPointer<KeyPressInteractorStyle> keypressStyle;
+		std::string screenshotPrefix;
+		unsigned int screenshotCounter;
+		
 		XtAppContext xAppContext;
 		boost::thread interactorThread;
 		
@@ -150,6 +182,7 @@ namespace intelligent {
 
 		void ProcessRequestQueue();
 		void InteractorLoop();
+		void CaptureScreenshot();
 		
 	};
 }
