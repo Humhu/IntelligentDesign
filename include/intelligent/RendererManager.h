@@ -121,7 +121,7 @@ namespace intelligent {
 	class KeyPressInteractorStyle : public vtkInteractorStyleTrackballCamera {
 	public:
 		static KeyPressInteractorStyle* New();
-		vtkTypeMacro(KeyPressInteractorStyle, vtkInteractorStyleTrackballCamera);
+// 		vtkTypeMacro(KeyPressInteractorStyle, vtkInteractorStyleTrackballCamera);
 		
 		virtual void OnKeyPress();
 
@@ -132,7 +132,7 @@ namespace intelligent {
 		boost::function<void()> callback;
 		
 	};
-	vtkStandardNewMacro(KeyPressInteractorStyle);
+// 	vtkStandardNewMacro(KeyPressInteractorStyle);
 	
 	class RendererManager {
 
@@ -143,7 +143,8 @@ namespace intelligent {
 		/*! \brief This manager's name. Also the window name. */
 		const std::string name;
 		
-		RendererManager( const std::string& _name );
+		RendererManager( const std::string& _name,
+						 unsigned int xSize, unsigned int ySize );
 
 		void Clear();
 		void QueueRenderRequest( RenderRequestVariant& request );

@@ -2,7 +2,9 @@
 
 set( IntelligentDesign_SOURCES
 	 AssemblyConstructor.cpp
+	 AssemblyVisualizer.cpp
 	 BlockVariable.cpp
+	 DiscreteAssembly.cpp
 	 DiscretePoint.cpp
 	 GibbsField.cpp
 	 Lattice.cpp

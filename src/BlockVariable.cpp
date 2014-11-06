@@ -18,8 +18,12 @@ namespace intelligent {
 	void BlockVariable::Sample(){
 				
 	}
+
+	void BlockVariable::SetState( BlockType _state ) {
+		state = _state;
+	}
 	
-	BlockType BlockVariable::GetState(){
+	BlockType BlockVariable::GetState() const {
 		return state;
 	}
 			

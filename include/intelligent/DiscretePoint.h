@@ -16,6 +16,7 @@ namespace intelligent {
 		int z;
 		
 		DiscretePoint3();
+		DiscretePoint3( int _x, int _y, int _z );
 		
 		bool operator==( const DiscretePoint3& other ) const;
 		
@@ -47,7 +48,7 @@ namespace intelligent {
 		/*! \brief Initializes the box to contain only the specified point. */
 		DiscreteBox3( const DiscretePoint3& point );
 		
-		/*! \brief Initializes teh box to contain the specified points. */
+		/*! \brief Initializes the box to contain the specified points. */
 		DiscreteBox3( const std::vector<DiscretePoint3>& points );
 		
 		/*! \brief Returns whether the point is contained in the box, inclusive. */

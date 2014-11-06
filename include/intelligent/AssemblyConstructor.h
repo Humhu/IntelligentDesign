@@ -2,6 +2,7 @@
 #define _ASSEMBLY_CONSTRUCTOR_H_
 
 #include "intelligent/Lattice.h"
+#include "intelligent/DiscreteAssembly.h"
 
 namespace intelligent {
 
@@ -24,7 +25,7 @@ namespace intelligent {
 
 		/*! \brief Performs slot update for the given field and lattice with a
 		 * specified new lattice position. */
-		void UpdateSlot( GibbsField& field, const Lattice& lattice,
+		void UpdateSlot( DiscreteAssembly& assembly,
 						 const DiscretePoint3& added );
 
 	private:
@@ -34,7 +35,7 @@ namespace intelligent {
 		const PotentialConstructor& constructor;
 		
 		/*! \brief Attempt to construct a potential centered at the query position. */
-		void CheckPoint( GibbsField& field, const Lattice& lattice,
+		void CheckPoint( DiscreteAssembly& assembly,
 						 const DiscretePoint3& added, const DiscretePoint3& query );
 		
 		/*! \brief Returns if the query position is in the clique centered at
@@ -57,7 +58,7 @@ namespace intelligent {
 		void AddSlot( const AssemblySlot::Ptr& slot );
 
 		/*! \brief Adds the specified voxel to the assembly. */
-		void AddVoxel( GibbsField& field, Lattice& lattice, const DiscretePoint3& pos );
+		void AddVoxel( DiscreteAssembly& assembly, const DiscretePoint3& pos );
 
 	private:
 

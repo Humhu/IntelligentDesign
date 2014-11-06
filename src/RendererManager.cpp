@@ -210,6 +210,10 @@ namespace intelligent {
 		callback();
 	}
 
+	KeyPressInteractorStyle* KeyPressInteractorStyle::New() {
+		return new KeyPressInteractorStyle;
+	}
+	
 	void KeyPressInteractorStyle::OnKeyPress() {
 	
 			// Get the keypress
@@ -229,7 +233,8 @@ namespace intelligent {
 		callback = _callback;
 	}
 		
-	RendererManager::RendererManager( const std::string& _name ) :
+	RendererManager::RendererManager( const std::string& _name, unsigned int xSize,
+									  unsigned int ySize ) :
 		name( _name ),
 		renderer( vtkRenderer::New() ),
 		renderWindow( vtkRenderWindow::New() ),
@@ -246,6 +251,7 @@ namespace intelligent {
 			
 		renderWindow->AddRenderer( renderer );
 		renderWindow->SetWindowName( name.c_str() );
+		renderWindow->SetSize( xSize, ySize );
 
 		renderer->SetBackground( 0.2, 0.2, 0.2 );
 		
