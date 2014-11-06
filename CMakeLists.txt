@@ -34,7 +34,7 @@ list( APPEND IntelligentDesign_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} )
 find_package( Boost REQUIRED )
 include_directories( ${Boost_INCLUDE_DIRS} )
 list( APPEND IntelligentDesign_LIBRARIES ${Boost_LIBRARIES} )
-list( APPEND IntelligentDesign_LIBRARIES "-lboost_thread" ) # Need to force linking against threads
+list( APPEND IntelligentDesign_LIBRARIES "-lboost_thread" "-lboost_system") # Need to force linking against threads
 
 # VTK for visualization
 find_package( VTK REQUIRED )
