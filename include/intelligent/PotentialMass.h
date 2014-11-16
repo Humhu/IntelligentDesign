@@ -1,5 +1,5 @@
-#ifndef _POTENTIAL_SUPPORT_
-#define _POTENTIAL_SUPPORT_
+#ifndef _POTENTIAL_MASS_
+#define _POTENTIAL_MASS_
 #include "intelligent/GibbsField.h"
 
 
@@ -8,13 +8,13 @@ namespace intelligent {
 	// we will order the id's so that the markov blanket comes in ordered as:
 	// self, top, bottom, 4 sides
 
-	class PotentialSupport : public GibbsPotential {
+	class PotentialMass : public GibbsPotential {
 	public:
 
-		PotentialSupport( const GibbsField& _field, unsigned int _id,
+		PotentialMass( const GibbsField& _field, unsigned int _id,
 						  const std::vector<unsigned int>& _variableIDs );
 
-		PotentialSupport( const GibbsField& _field, const GibbsPotential& other );
+		PotentialMass( const GibbsField& _field, const GibbsPotential& other );
 
 		virtual GibbsPotential::Ptr Clone( const GibbsField& _field );
 		
