@@ -7,6 +7,7 @@ namespace intelligent {
 	PotentialSupport::PotentialSupport( const GibbsField& _field, unsigned int _id,
 									const std::vector<unsigned int>& _variableIDs ) : 
 									GibbsPotential( _field, _id,_variableIDs ) {
+										
 	}  
   
 	PotentialSupport::PotentialSupport( const GibbsField& _field, const GibbsPotential& other ) : 

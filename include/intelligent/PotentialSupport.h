@@ -2,7 +2,6 @@
 #define _POTENTIAL_SUPPORT_
 #include "intelligent/GibbsField.h"
 
-
 namespace intelligent {
 	
 	// we will order the id's so that the markov blanket comes in ordered as:
@@ -19,7 +18,7 @@ namespace intelligent {
 		virtual GibbsPotential::Ptr Clone( const GibbsField& _field );
 		
 		virtual double CalculatePotential();
-
+		
 	};
 
 }
