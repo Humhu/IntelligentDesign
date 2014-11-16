@@ -9,6 +9,7 @@ set( IntelligentDesign_SOURCES
 	 GibbsField.cpp
 	 Lattice.cpp
 	 MCMCSampler.cpp
+	 PotentialSupport.cpp
 	 RandomDistributions.cpp
 	 RendererManager.cpp )
 
