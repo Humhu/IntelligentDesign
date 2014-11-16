@@ -9,17 +9,25 @@ namespace intelligent {
 
 	void AssemblyVisualizer::Visualize( const DiscreteAssembly& assembly ) {
 
-		renderer.Clear();
+		std::vector<RenderRequestVariant> requests;
+		
+		ClearRequest crequest;
+		RenderRequestVariant creq = crequest;
+		requests.push_back( creq );
+		
 		requestCounter = 0;
 		
 		DiscreteBox3::Operator visOp =
-			boost::bind( &AssemblyVisualizer::VisualizePoint, this, assembly, _1 );
+			boost::bind( &AssemblyVisualizer::VisualizePoint, this, assembly, boost::ref(requests), _1 );
 		DiscreteBox3 latticeBounds = assembly.GetLattice().GetBoundingBox();
 
 		latticeBounds.Iterate( visOp );
+
+		renderer.QueueRenderRequests( requests );
 	}
 
 	void AssemblyVisualizer::VisualizePoint( const DiscreteAssembly& assembly,
+											 std::vector<RenderRequestVariant>& requests,
 											 const DiscretePoint3& point ) {
 
 		CubeRenderRequest creq;
@@ -59,7 +67,7 @@ namespace intelligent {
 		}
 		
 		RenderRequestVariant vreq = creq;
-		renderer.QueueRenderRequest( vreq );
+		requests.push_back( vreq );
 		
 	}
 	

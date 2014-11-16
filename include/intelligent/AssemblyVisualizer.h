@@ -22,6 +22,7 @@ namespace intelligent {
 		RendererManager& renderer;
 
 		void VisualizePoint( const DiscreteAssembly& assembly,
+							 std::vector<RenderRequestVariant>& requests,
 							 const DiscretePoint3& point );
 		
 	};

@@ -27,7 +27,7 @@ namespace intelligent {
 			yEdge = true;			
 		}
 		else {yEdge = false;}
-										
+		
 		edge = xEdge || yEdge;
 		
 	}  

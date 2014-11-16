@@ -3,8 +3,12 @@
 #include "intelligent/RendererManager.h"
 #include "intelligent/DiscreteAssembly.h"
 #include "intelligent/MCMCSampler.h"
+
+// Potentials
 #include "intelligent/PotentialSupport.h"
 #include "intelligent/PotentialHeight.h"
+#include "intelligent/PotentialMass.h"
+#include "intelligent/PotentialEdge.h"
 
 using namespace intelligent;
 
@@ -13,15 +17,23 @@ GibbsVariable::Ptr CreateBlock( const GibbsField& field, unsigned int id ) {
 }
 
 GibbsPotential::Ptr CreateSupportPotential( const GibbsField& field, const Lattice& lattice,
-											unsigned int id,
-											const std::vector<unsigned int>& variableIDs ) {
+											unsigned int id, const std::vector<unsigned int>& variableIDs ) {
 	return std::make_shared<PotentialSupport>( field, id, variableIDs );
 }
 
 GibbsPotential::Ptr CreateHeightPotential( const GibbsField& field, const Lattice& lattice,
-										   unsigned int id,
-										   const std::vector<unsigned int>& variableIDs ) {
+										   unsigned int id, const std::vector<unsigned int>& variableIDs ) {
 	return std::make_shared<PotentialHeight>( field, id, variableIDs, lattice );
+}
+
+GibbsPotential::Ptr CreateMassPotential( const GibbsField& field, const Lattice& lattice,
+										 unsigned int id, const std::vector<unsigned int>& variableIDs ) {
+	return std::make_shared<PotentialMass>( field, id, variableIDs );
+}
+
+GibbsPotential::Ptr CreateEdgePotential( const GibbsField& field, const Lattice& lattice,
+										 unsigned int id, const std::vector<unsigned int>& variableIDs ) {
+	return std::make_shared<PotentialEdge>( field, id, variableIDs, lattice );
 }
 
 int main() {
@@ -43,12 +55,45 @@ int main() {
 	supportPoints.emplace_back( 0, 1, 0 );
 	supportPoints.emplace_back( 0, -1, 0 );
 	AssemblySlot::PotentialConstructor supportConstructor =
-	boost::bind( &CreateSupportPotential, _1, _2, _3, _4 );
+		boost::bind( &CreateSupportPotential, _1, _2, _3, _4 );
 	AssemblySlot::Ptr supportSlot =
 		std::make_shared<AssemblySlot>( supportPoints, supportConstructor );
 	
  	aconst.AddSlot( supportSlot );
 
+	// Add the height potential slot
+	// Unary slot only needs self
+	std::vector<DiscretePoint3> heightPoints;
+	heightPoints.emplace_back( 0, 0, 0 );
+	AssemblySlot::PotentialConstructor heightConstructor =
+		boost::bind( &CreateHeightPotential, _1, _2, _3, _4 );
+	AssemblySlot::Ptr heightSlot =
+		std::make_shared<AssemblySlot>( heightPoints, heightConstructor );
+
+	aconst.AddSlot( heightSlot );
+
+	// Add the mass unary slot
+	// Unary slot only needs self
+	std::vector<DiscretePoint3> massPoints;
+	massPoints.emplace_back( 0, 0, 0 );
+	AssemblySlot::PotentialConstructor massConstructor =
+		boost::bind( &CreateMassPotential, _1, _2, _3, _4 );
+	AssemblySlot::Ptr massSlot =
+		std::make_shared<AssemblySlot>( massPoints, massConstructor );
+
+	aconst.AddSlot( massSlot );
+		
+	// Add the border unary slot
+	// Unary slot only needs self
+	std::vector<DiscretePoint3> edgePoints;
+	edgePoints.emplace_back( 0, 0, 0 );
+	AssemblySlot::PotentialConstructor edgeConstructor =
+		boost::bind( &CreateEdgePotential, _1, _2, _3, _4 );
+	AssemblySlot::Ptr edgeSlot =
+		std::make_shared<AssemblySlot>( edgePoints, edgeConstructor );
+
+	aconst.AddSlot( edgeSlot );
+		
 	// Iterate over the cubical range and add voxels
 	int xDim = 10;
 	int yDim = 10;
@@ -82,7 +127,7 @@ int main() {
 	AssemblyVisualizer aviz( rman );
 
 	MCMCSampler sampler;
-	unsigned int sampleSize = 1;
+	unsigned int sampleSize = 10;
 	for( unsigned int i = 0; i < 100; i++ ) {
 		sampler.Sample( assembly.GetField(), sampleSize );
 		aviz.Visualize( assembly );

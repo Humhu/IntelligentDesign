@@ -297,6 +297,13 @@ namespace intelligent {
 
 	}
 
+	void RendererManager::QueueRenderRequests( const std::vector<RenderRequestVariant>& requests ) {
+		boost::unique_lock<boost::mutex> lock( queueMutex );
+		BOOST_FOREACH( const RenderRequestVariant& req, requests ) {
+			requestQueue.push_back( req );
+		}
+	}
+
 	void RendererManager::ProcessRequestQueue() {
 
 		boost::unique_lock<boost::mutex> lock( queueMutex );

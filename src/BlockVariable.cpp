@@ -26,9 +26,6 @@ namespace intelligent {
 		state = BLOCK_FULL;
 		potentials[2] = CalculatePotential();
 
-		std::cout << "Potentials: " << potentials[0] << ", " << potentials[1]
-			<< ", " << potentials[2] << std::endl;
-
 		unsigned int ind = SampleNumberLine( potentials, rng );
 		if( ind == 0 ) {
 			state = BLOCK_EMPTY;

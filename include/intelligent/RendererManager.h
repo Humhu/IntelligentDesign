@@ -153,6 +153,7 @@ namespace intelligent {
 
 		void Clear();
 		void QueueRenderRequest( RenderRequestVariant& request );
+		void QueueRenderRequests( const std::vector<RenderRequestVariant>& requests );
 
 		void SetScreenshotPrefix( const std::string& _prefix );
 		void SetScreenshotMagnification( unsigned int mag );
