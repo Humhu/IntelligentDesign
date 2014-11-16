@@ -4,6 +4,7 @@
 #include "intelligent/DiscreteAssembly.h"
 #include "intelligent/MCMCSampler.h"
 #include "intelligent/PotentialSupport.h"
+#include "intelligent/PotentialHeight.h"
 
 using namespace intelligent;
 
@@ -17,6 +18,12 @@ GibbsPotential::Ptr CreateSupportPotential( const GibbsField& field, const Latti
 	return std::make_shared<PotentialSupport>( field, id, variableIDs );
 }
 
+GibbsPotential::Ptr CreateHeightPotential( const GibbsField& field, const Lattice& lattice,
+										   unsigned int id,
+										   const std::vector<unsigned int>& variableIDs ) {
+	return std::make_shared<PotentialHeight>( field, id, variableIDs, lattice );
+}
+
 int main() {
 
 	// Create the assembly and constructor
@@ -28,6 +35,7 @@ int main() {
 	// Add the support potential slot
 	// Order for support slot is top, bottom, 4 sides (in no particular order)
 	std::vector<DiscretePoint3> supportPoints;
+	supportPoints.emplace_back( 0, 0, 0 );
 	supportPoints.emplace_back( 0, 0, 1 );
 	supportPoints.emplace_back( 0, 0, -1 );
 	supportPoints.emplace_back( 1, 0, 0 );
@@ -62,6 +70,8 @@ int main() {
 					 boost::ref(assembly), _1 );
 	box.Iterate( addOp );
 
+	std::cout << "Created " << assembly.GetField().NumPotentials() << " potentials." << std::endl;
+
 	// Add some dummy blocks to visualize
 	assembly.GetBlock( 0 )->SetState( BLOCK_FULL );
 	assembly.GetBlock( 1 )->SetState( BLOCK_HALF );
@@ -72,7 +82,7 @@ int main() {
 	AssemblyVisualizer aviz( rman );
 
 	MCMCSampler sampler;
-	unsigned int sampleSize = 10;
+	unsigned int sampleSize = 1;
 	for( unsigned int i = 0; i < 100; i++ ) {
 		sampler.Sample( assembly.GetField(), sampleSize );
 		aviz.Visualize( assembly );

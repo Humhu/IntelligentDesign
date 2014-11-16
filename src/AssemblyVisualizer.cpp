@@ -16,7 +16,6 @@ namespace intelligent {
 			boost::bind( &AssemblyVisualizer::VisualizePoint, this, assembly, _1 );
 		DiscreteBox3 latticeBounds = assembly.GetLattice().GetBoundingBox();
 
-		std::cout << "bounds: " << latticeBounds.minX << ", " << latticeBounds.maxX << std::endl;
 		latticeBounds.Iterate( visOp );
 	}
 
@@ -51,6 +50,7 @@ namespace intelligent {
 				creq.representation = RENDER_GEOM_WIREFRAME;
 				break;
 			case BLOCK_HALF:
+				creq.color = Color( 1, 0, 0 );
 				creq.opacity = 0.5;
 				break;
 			case BLOCK_FULL:

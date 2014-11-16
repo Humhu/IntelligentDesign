@@ -22,7 +22,7 @@ namespace intelligent {
 		// For each point in the bounds of the slot centered on the new node, see if
 		// this slot at that point can construct a potential.
 		DiscreteBox3::Operator op =
-			boost::bind( &AssemblySlot::CheckPoint, this, assembly, added, _1 );
+			boost::bind( &AssemblySlot::CheckPoint, this, boost::ref(assembly), added, _1 );
 			
 		centeredBox.Iterate( op );
 	}
