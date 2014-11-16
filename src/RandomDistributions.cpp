@@ -4,6 +4,25 @@
 
 namespace intelligent {
 
+	unsigned int SampleNumberLine( const std::vector<double>& line, double rng ) {
+
+		std::vector<double> acc( line.size() );
+		double z = 0;
+		for( unsigned int i = 0; i < line.size(); i++ ) {
+			z += line[i];
+			acc[i] = z;
+		}
+
+		rng = rng*z; // Scale up to max value
+		for( unsigned int i = 0; i < acc.size(); i++ ) {
+			if( rng < acc[i] ) {
+				return i;
+			}
+		}
+		return acc.size();
+		
+	}
+	
 	UniformDistribution::UniformDistribution( double lower, double upper ) {
 		SetBounds( lower, upper );
 	}

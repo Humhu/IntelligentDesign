@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 #include <cmath>
 
 namespace intelligent {
@@ -39,13 +40,13 @@ namespace intelligent {
 
 	double GibbsVariable::CalculatePotential() {
 
-		double expSum = 0.0;
+		double prod = 1.0;
 		std::vector <GibbsPotential::Ptr> potentials = GetPotentials();
 		BOOST_FOREACH( const GibbsPotential::Ptr& pot, potentials ) {
-			expSum += pot->CalculatePotential();
+			prod *= pot->CalculatePotential();
 		}
 
-		return std::exp( expSum );
+		return prod;
 	}
 
 	std::vector<GibbsPotential::Ptr> GibbsVariable::GetPotentials() const {
@@ -107,8 +108,10 @@ namespace intelligent {
 	
 	std::vector<GibbsVariable::Ptr> GibbsField::GetVariables() const {
 		std::vector<GibbsVariable::Ptr> vars( variables.size() );
+		unsigned int idx = 0;
 		BOOST_FOREACH( const VariableMap::value_type& item, variables ) {
-			vars.push_back( item.second );
+			vars[idx] = item.second;
+			idx++;
 		}
 		return vars;
 	}

@@ -1,4 +1,5 @@
 #include "intelligent/BlockVariable.h"
+#include "intelligent/RandomDistributions.h"
 
 namespace intelligent {
 
@@ -15,8 +16,29 @@ namespace intelligent {
 		return pointer;
 	}
 			
-	void BlockVariable::Sample(){
-				
+	void BlockVariable::Sample( double rng ){
+
+		std::vector<double> potentials(3);
+		state = BLOCK_EMPTY;
+		potentials[0] = CalculatePotential();
+		state = BLOCK_HALF;
+		potentials[1] = CalculatePotential();
+		state = BLOCK_FULL;
+		potentials[2] = CalculatePotential();
+
+		unsigned int ind = SampleNumberLine( potentials, rng );
+		if( ind == 0 ) {
+			state = BLOCK_EMPTY;
+		}
+		else if( ind == 1 ) {
+			state = BLOCK_HALF;
+		}
+		else if( ind == 2 ) {
+			state = BLOCK_FULL;
+		}
+		else {
+			throw std::runtime_error( "Received invalid sample index." );
+		}
 	}
 
 	void BlockVariable::SetState( BlockType _state ) {

@@ -61,6 +61,10 @@ namespace intelligent {
 		RenderRequest();
 	};
 
+	struct ClearRequest : public RenderRequest {
+		bool clearAll;
+	};
+	
 	struct CubeRenderRequest : public RenderRequest {
 		double center[3];
 		double lengths[3];
@@ -79,7 +83,7 @@ namespace intelligent {
 	};
 
 	typedef boost::variant < CubeRenderRequest, LineRenderRequest,
-							 PlaneRenderRequest >
+							 PlaneRenderRequest, ClearRequest >
 			RenderRequestVariant;
 
 
@@ -93,6 +97,7 @@ namespace intelligent {
 		void operator()( const CubeRenderRequest& request );
 		void operator()( const LineRenderRequest& request );
 		void operator()( const PlaneRenderRequest& request );
+		void operator()( const ClearRequest& request );
 		
 	private:
 
@@ -154,6 +159,7 @@ namespace intelligent {
 		
 	private:
 
+		boost::mutex rendererMutex;
 		boost::mutex queueMutex;
 		std::deque<RenderRequestVariant> requestQueue;
 

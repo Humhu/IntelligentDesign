@@ -81,10 +81,11 @@ namespace intelligent {
 		/*! \brief Return a smart poitner to a copy-constructed variable. */
 		virtual GibbsVariable::Ptr Clone( const GibbsField& _field ) = 0;
 		
-		/*! \brief Sample this variable proportional to its potentials. */
-		virtual void Sample() = 0;
+		/*! \brief Given a random sample in [0,1], sample this variable
+		 * proportional to its potentials. */
+		virtual void Sample( double rng ) = 0;
 
-		/*! \brief Calculate the product of exponentiated potentials connected
+		/*! \brief Calculate the product of potentials connected
 		 * to this variable. */
 		double CalculatePotential();
 
@@ -93,7 +94,7 @@ namespace intelligent {
 
 		/*! \brief Adds an additional potential to this variable. */
 		void AddPotential( unsigned int potID );
-
+		
 	private:
 
 		/*! \brief The IDs corresponding to this variable's potentials. */

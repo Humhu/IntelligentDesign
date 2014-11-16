@@ -17,8 +17,8 @@ namespace intelligent {
 			typedef std::shared_ptr<BlockVariable> Ptr;
 
 			virtual GibbsVariable::Ptr Clone( const GibbsField& _field );
-			
-			virtual void Sample();
+
+			virtual void Sample( double rng );
 
 			BlockVariable( const GibbsField& _field, unsigned int id );
 			
