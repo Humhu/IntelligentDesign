@@ -2,10 +2,15 @@
 
 #include <boost/foreach.hpp>
 
+#include <iostream>
+
 namespace intelligent {
 
 	DiscretePoint3::DiscretePoint3() :
-	x( 0 ), y( 0 ), z( 0 ) {}
+		x( 0 ), y( 0 ), z( 0 ) {}
+
+	DiscretePoint3::DiscretePoint3( int _x, int _y, int _z ) :
+		x( _x ), y( _y ), z( _z ) {}
 	
 	bool DiscretePoint3::operator==( const DiscretePoint3& other ) const {
 		return x == other.x && y == other.y && z == other.z;
@@ -109,7 +114,7 @@ namespace intelligent {
 
 		for( int x = minX; x <= maxX; x++ ) {
 			for( int y = minY; y <= maxY; y++ ) {
-				for( int z = minZ; z <= maxZ; y++ ) {
+				for( int z = minZ; z <= maxZ; z++ ) {
 					DiscretePoint3 query;
 					query.x = x;
 					query.y = y;

@@ -8,7 +8,7 @@ namespace intelligent {
 	enum BlockType {
 		BLOCK_EMPTY,
 		BLOCK_FULL,
-		BLOCK_THIN
+		BLOCK_HALF
 	};
 
 	class BlockVariable : public GibbsVariable {
@@ -24,7 +24,9 @@ namespace intelligent {
 			
 			BlockVariable( const GibbsField& _field, const BlockVariable& other );	
 
-			BlockType GetState();
+			// HACK For debugging!
+			void SetState( BlockType _state );
+			BlockType GetState() const;
 			
 
 	private:

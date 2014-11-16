@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <iostream>
 
 #include <boost/foreach.hpp>
 
@@ -27,6 +28,7 @@ namespace intelligent {
 		positionIDMap[ pos ] = id;
 
 		boundingBox.ExpandToInclude( pos );
+		
 	}
 
 	DiscretePoint3 Lattice::GetNodePosition( unsigned int id ) const {

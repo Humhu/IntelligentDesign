@@ -4,7 +4,7 @@ using namespace intelligent;
 
 int main() {
 
-	RendererManager rman( "Output" );
+	RendererManager rman( "Output", 600, 600 );
 
 	std::cout << "Initialization complete." << std::endl;
 

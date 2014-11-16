@@ -3,6 +3,8 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
+#include <iostream>
+
 namespace intelligent {
 
 	AssemblySlot::AssemblySlot( const std::vector<DiscretePoint3>& _points,
@@ -11,7 +13,7 @@ namespace intelligent {
 		points( _points ),
 		constructor( _constructor ) {}
 
-	void AssemblySlot::UpdateSlot( GibbsField& field, const Lattice& lattice,
+	void AssemblySlot::UpdateSlot( DiscreteAssembly& assembly,
 								   const DiscretePoint3& added ) {
 
 		DiscreteBox3 centeredBox = boundingBox;
@@ -20,12 +22,12 @@ namespace intelligent {
 		// For each point in the bounds of the slot centered on the new node, see if
 		// this slot at that point can construct a potential.
 		DiscreteBox3::Operator op =
-			boost::bind( &AssemblySlot::CheckPoint, this, field, lattice, added, _1 );
+			boost::bind( &AssemblySlot::CheckPoint, this, assembly, added, _1 );
 			
 		centeredBox.Iterate( op );
 	}
 	
-	void AssemblySlot::CheckPoint( GibbsField& field, const Lattice& lattice,
+	void AssemblySlot::CheckPoint( DiscreteAssembly& assembly,
 								   const DiscretePoint3& added,
 								   const DiscretePoint3& query ) {
 
@@ -39,7 +41,7 @@ namespace intelligent {
 			
 			try {
 				DiscretePoint3 pos = query + offset;
-				ids.push_back( lattice.GetNodeID( pos ) );
+				ids.push_back( assembly.GetLattice().GetNodeID( pos ) );
 			}
 			catch ( std::out_of_range e ) {
 				// This means the slot's nodes do not all exist yet
@@ -48,13 +50,13 @@ namespace intelligent {
 		}
 		
 		// At this point we have all the ordered IDs to construct the potential
-		unsigned int potID = field.NumPotentials();
-		GibbsPotential::Ptr pot = constructor( field, potID, ids );
-		field.AddPotential( pot );
+		unsigned int potID = assembly.GetField().NumPotentials();
+		GibbsPotential::Ptr pot = constructor( assembly.GetField(), potID, ids );
+		assembly.GetField().AddPotential( pot );
 
 		// Also update the corresponding variables with the new potential
 		BOOST_FOREACH( unsigned int varID, ids ) {
-			GibbsVariable::Ptr var = field.GetVariable( varID );
+			GibbsVariable::Ptr var = assembly.GetField().GetVariable( varID );
 			var->AddPotential( potID );
 		}
 		
@@ -78,15 +80,15 @@ namespace intelligent {
 		slots.push_back( slot );
 	}
 
-	void AssemblyConstructor::AddVoxel( GibbsField& field, Lattice& lattice,
+	void AssemblyConstructor::AddVoxel( DiscreteAssembly& assembly,
 										const DiscretePoint3& pos ) {
-		unsigned int nodeID = field.NumVariables();
-		GibbsVariable::Ptr var = constructor( field, nodeID );
-		field.AddVariable( var );
-		lattice.AddNode( nodeID, pos );
+		unsigned int nodeID = assembly.GetField().NumVariables();
+		GibbsVariable::Ptr var = constructor( assembly.GetField(), nodeID );
+		assembly.GetField().AddVariable( var );
+		assembly.GetLattice().AddNode( nodeID, pos );
 
 		BOOST_FOREACH( const AssemblySlot::Ptr& slot, slots ) {
-			slot->UpdateSlot( field, lattice, pos );
+			slot->UpdateSlot( assembly, pos );
 		}
 	}
 	
