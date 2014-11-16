@@ -158,6 +158,14 @@ namespace intelligent {
 		
 	}
 
+	void RenderRequestVisitor::operator()( const ClearRequest& request ) {
+		BOOST_FOREACH( const RendererManager::RegistrationMap::value_type& item,
+					   manager.registry ) {
+			manager.renderer->RemoveActor( item.second.actor );
+		}
+		manager.registry.clear();
+	}
+
 	void RenderRequestVisitor::SetActorProperties( vtkSmartPointer<vtkActor>& actor,
 												   const RenderRequest& request ) {
 
@@ -307,11 +315,9 @@ namespace intelligent {
 	}
 
 	void RendererManager::Clear() {
-
-		BOOST_FOREACH( const RegistrationMap::value_type& item, registry ) {
-			renderer->RemoveActor( item.second.actor );
-		}
-		registry.clear();
+		ClearRequest request;
+		RenderRequestVariant vreq = request;
+		QueueRenderRequest( vreq );
 	}
 
 	void RendererManager::SetScreenshotPrefix( const std::string& _prefix ) {

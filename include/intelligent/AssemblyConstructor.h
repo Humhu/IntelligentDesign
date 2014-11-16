@@ -17,7 +17,7 @@ namespace intelligent {
 
 		typedef std::shared_ptr<AssemblySlot> Ptr;
 		typedef boost::function <GibbsPotential::Ptr
-			( const GibbsField&, unsigned int, const std::vector<unsigned int>& )>
+			( const GibbsField&, const Lattice&, unsigned int, const std::vector<unsigned int>& )>
 			PotentialConstructor;
 
 		AssemblySlot( const std::vector <DiscretePoint3>& _points,

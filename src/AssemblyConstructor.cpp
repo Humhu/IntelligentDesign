@@ -51,7 +51,8 @@ namespace intelligent {
 		
 		// At this point we have all the ordered IDs to construct the potential
 		unsigned int potID = assembly.GetField().NumPotentials();
-		GibbsPotential::Ptr pot = constructor( assembly.GetField(), potID, ids );
+		GibbsPotential::Ptr pot = constructor( assembly.GetField(), assembly.GetLattice(),
+											   potID, ids );
 		assembly.GetField().AddPotential( pot );
 
 		// Also update the corresponding variables with the new potential
@@ -85,6 +86,7 @@ namespace intelligent {
 		unsigned int nodeID = assembly.GetField().NumVariables();
 		GibbsVariable::Ptr var = constructor( assembly.GetField(), nodeID );
 		assembly.GetField().AddVariable( var );
+
 		assembly.GetLattice().AddNode( nodeID, pos );
 
 		BOOST_FOREACH( const AssemblySlot::Ptr& slot, slots ) {

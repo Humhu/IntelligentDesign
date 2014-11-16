@@ -7,6 +7,10 @@
 
 namespace intelligent {
 
+	// Samples an element from a vector in proportion to their values given a
+	// random number in [0,1]
+	unsigned int SampleNumberLine( const std::vector<double>& line, double rng );
+	
 	template < class Generator, class S = double >
 	class DistributionBase {
 	public:
