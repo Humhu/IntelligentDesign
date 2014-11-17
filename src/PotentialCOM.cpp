@@ -22,8 +22,8 @@ namespace intelligent {
 		SetDesiredCOM(com);
 	}  
     
-    // FIXME: Pointer to lattice and desiredCOM
-    // Calling this constructor from anywhere other than Clone() is a bad idea
+	// FIXME: Pointer to lattice and desiredCOM
+	// Calling this constructor from anywhere other than Clone() is a bad idea
 	PotentialCOM::PotentialCOM(const GibbsField & _field, 
 		const GibbsPotential & _other) 
 	: GibbsPotential(_field, _other) 
@@ -33,17 +33,17 @@ namespace intelligent {
 		return std::make_shared<PotentialCOM>(_field, *this);
 	}
 
-    void PotentialCOM::SetDesiredCOM(const DiscretePoint3 & _com) {
-    	desiredCOM = _com;
-    }
+	void PotentialCOM::SetDesiredCOM(const DiscretePoint3 & _com) {
+		desiredCOM = _com;
+	}
 	
 	double PotentialCOM::CalculatePotential() {
 		const auto & bbox = lattice->GetBoundingBox(); 
 		std::vector<GibbsVariable::Ptr> clique = GetClique();
-        BlockVariable::Ptr blockVariable;
-        DiscretePoint3 blockPosition;
-        double cx = 0.0, cy = 0.0, cz = 0.0;
-        double totalMass = 0.0;
+		BlockVariable::Ptr blockVariable;
+		DiscretePoint3 blockPosition;
+		double cx = 0.0, cy = 0.0, cz = 0.0;
+		double totalMass = 0.0;
 		for (size_t i=0; i<clique.size(); i++) {
 			double mass = 0.0;
 			blockVariable = std::dynamic_pointer_cast<BlockVariable>(clique[i]);
