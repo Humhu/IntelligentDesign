@@ -15,11 +15,11 @@ namespace intelligent {
 
 		rng = rng*z; // Scale up to max value
 		for( unsigned int i = 0; i < acc.size(); i++ ) {
-			if( rng < acc[i] ) {
+			if( rng <= acc[i] ) {
 				return i;
 			}
 		}
-		return acc.size();
+		return acc.size() - 1;
 		
 	}
 	

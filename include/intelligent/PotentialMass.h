@@ -11,6 +11,8 @@ namespace intelligent {
 	class PotentialMass : public GibbsPotential {
 	public:
 
+		typedef std::shared_ptr<PotentialMass> Ptr;
+		
 		PotentialMass( const GibbsField& _field, unsigned int _id,
 						  const std::vector<unsigned int>& _variableIDs );
 

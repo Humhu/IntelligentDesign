@@ -70,9 +70,22 @@ namespace intelligent {
 		double lengths[3];
 	};
 
-	struct LineRenderRequest : public RenderRequest {	
+	struct LineRenderRequest : public RenderRequest {
 		double start[3];
 		double finish[3];
+	};
+
+	struct ArrowRenderRequest : public RenderRequest {
+		double start[3];
+		double finish[3];
+		double tipLength;
+		double tipRadius;
+		unsigned int tipResolution;
+		double shaftLength;
+		double shaftRadius;
+		unsigned int shaftResolution;
+
+		ArrowRenderRequest();
 	};
 
 	// TODO Plane has different methods for rotating/shifting
@@ -83,7 +96,8 @@ namespace intelligent {
 	};
 
 	typedef boost::variant < CubeRenderRequest, LineRenderRequest,
-							 PlaneRenderRequest, ClearRequest >
+							 PlaneRenderRequest, ArrowRenderRequest,
+							 ClearRequest >
 			RenderRequestVariant;
 
 
@@ -97,6 +111,7 @@ namespace intelligent {
 		void operator()( const CubeRenderRequest& request );
 		void operator()( const LineRenderRequest& request );
 		void operator()( const PlaneRenderRequest& request );
+		void operator()( const ArrowRenderRequest& request );
 		void operator()( const ClearRequest& request );
 		
 	private:
@@ -180,7 +195,7 @@ namespace intelligent {
 		boost::thread interactorThread;
 		
 		struct RenderRegistration {
-			vtkSmartPointer<vtkAlgorithm> algorithm;
+			std::vector< vtkSmartPointer<vtkAlgorithm> > algorithms;
 			vtkSmartPointer<vtkMapper> mapper;
 			vtkSmartPointer<vtkActor> actor;
 		};

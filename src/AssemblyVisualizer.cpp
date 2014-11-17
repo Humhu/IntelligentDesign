@@ -23,6 +23,24 @@ namespace intelligent {
 
 		latticeBounds.Iterate( visOp );
 
+		ArrowRenderRequest areq;
+		areq.start[2] = latticeBounds.minZ - 0.5;
+		areq.start[0] = latticeBounds.minX - 1;
+		areq.start[1] = latticeBounds.minY - 1;
+
+		areq.finish[2] = latticeBounds.maxZ + 0.5;
+		areq.finish[0] = latticeBounds.minX - 1;
+		areq.finish[1] = latticeBounds.minY - 1;
+
+		double scale = latticeBounds.maxZ - latticeBounds.minZ;
+		areq.tipLength = 0.1;
+		areq.tipRadius = 0.05;
+		areq.tipResolution = 10;
+		areq.shaftRadius = 0.01;
+		areq.id = requestCounter++;
+		RenderRequestVariant areqv = areq;
+		requests.push_back( areqv );
+		
 		renderer.QueueRenderRequests( requests );
 	}
 

@@ -10,6 +10,8 @@ namespace intelligent {
 	class PotentialSupport : public GibbsPotential {
 	public:
 
+		typedef std::shared_ptr<PotentialSupport> Ptr;
+		
 		PotentialSupport( const GibbsField& _field, unsigned int _id,
 						  const std::vector<unsigned int>& _variableIDs );
 

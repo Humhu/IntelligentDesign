@@ -12,6 +12,8 @@ namespace intelligent {
 	class PotentialHeight : public GibbsPotential {
 	public:
 
+		typedef std::shared_ptr<PotentialHeight> Ptr;
+		
 		PotentialHeight( const GibbsField& _field, unsigned int _id,
 					   const std::vector<unsigned int>& _variableIDs,
 					   const Lattice& _lattice );

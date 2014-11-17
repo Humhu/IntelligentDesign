@@ -11,7 +11,7 @@ namespace intelligent {
 		unsigned int node_id = _variableIDs[0];
 												  
 		// send node id to lattice to get node height in lattice
-		nodeHeight = _lattice.GetNodePosition( node_id ).z;
+		nodeHeight = _lattice.GetNodePosition( node_id ).z - _lattice.GetBoundingBox().minZ + 1;
 		latticeHeight = _lattice.GetBoundingBox().maxZ - _lattice.GetBoundingBox().minZ + 1;
 		
 	}  
@@ -43,9 +43,10 @@ namespace intelligent {
 		double me = blanket_val[0];
 		
 		// we want to reward low weights.
-		double prob = 0;
-		if ( me == 0 ) {prob = 0.01;}
-		else {prob = nodeHeight/latticeHeight;} 
+		double prob = nodeHeight/latticeHeight;
+		if ( me == 0 ) {
+			prob = 0.01;
+		}
 			
 		return prob;
 	}

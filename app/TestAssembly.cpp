@@ -9,6 +9,7 @@
 #include "intelligent/PotentialHeight.h"
 #include "intelligent/PotentialMass.h"
 #include "intelligent/PotentialEdge.h"
+#include "intelligent/PotentialCOM.h"
 
 using namespace intelligent;
 
@@ -36,6 +37,19 @@ GibbsPotential::Ptr CreateEdgePotential( const GibbsField& field, const Lattice&
 	return std::make_shared<PotentialEdge>( field, id, variableIDs, lattice );
 }
 
+GibbsPotential::Ptr CreateCOMPotential( const GibbsField& field, const Lattice& lattice,
+										unsigned int id, const std::vector<unsigned int>& variableIDs,
+										ContinuousPoint3 com ) {
+	PotentialCOM::Ptr pot =
+		std::make_shared<PotentialCOM>( field, id, variableIDs, lattice );
+	pot->SetDesiredCOM( com );
+	return pot;
+}
+
+void AddCOMPoint( std::vector<DiscretePoint3>& pts, const DiscretePoint3& p ) {
+	pts.push_back(p);
+}
+
 int main() {
 
 	// Create the assembly and constructor
@@ -58,19 +72,19 @@ int main() {
 		boost::bind( &CreateSupportPotential, _1, _2, _3, _4 );
 	AssemblySlot::Ptr supportSlot =
 		std::make_shared<AssemblySlot>( supportPoints, supportConstructor );
-	
- 	aconst.AddSlot( supportSlot );
+
+//  	aconst.AddSlot( supportSlot );
 
 	// Add the height potential slot
 	// Unary slot only needs self
-	std::vector<DiscretePoint3> heightPoints;
-	heightPoints.emplace_back( 0, 0, 0 );
-	AssemblySlot::PotentialConstructor heightConstructor =
-		boost::bind( &CreateHeightPotential, _1, _2, _3, _4 );
-	AssemblySlot::Ptr heightSlot =
-		std::make_shared<AssemblySlot>( heightPoints, heightConstructor );
+// 	std::vector<DiscretePoint3> heightPoints;
+// 	heightPoints.emplace_back( 0, 0, 0 );
+// 	AssemblySlot::PotentialConstructor heightConstructor =
+// 		boost::bind( &CreateHeightPotential, _1, _2, _3, _4 );
+// 	AssemblySlot::Ptr heightSlot =
+// 		std::make_shared<AssemblySlot>( heightPoints, heightConstructor );
 
-	aconst.AddSlot( heightSlot );
+// 	aconst.AddSlot( heightSlot );
 
 	// Add the mass unary slot
 	// Unary slot only needs self
@@ -81,8 +95,8 @@ int main() {
 	AssemblySlot::Ptr massSlot =
 		std::make_shared<AssemblySlot>( massPoints, massConstructor );
 
-	aconst.AddSlot( massSlot );
-		
+// 	aconst.AddSlot( massSlot );
+
 	// Add the border unary slot
 	// Unary slot only needs self
 	std::vector<DiscretePoint3> edgePoints;
@@ -92,12 +106,12 @@ int main() {
 	AssemblySlot::Ptr edgeSlot =
 		std::make_shared<AssemblySlot>( edgePoints, edgeConstructor );
 
-	aconst.AddSlot( edgeSlot );
-		
-	// Iterate over the cubical range and add voxels
-	int xDim = 10;
-	int yDim = 10;
-	int zDim = 10;
+// 	aconst.AddSlot( edgeSlot );
+
+	// Lattice range
+	int xDim = 8;
+	int yDim = 8;
+	int zDim = 4;
 	
 	std::vector<DiscretePoint3> corners;
 	corners.emplace_back( 0, 0, 0 );
@@ -110,17 +124,33 @@ int main() {
 	corners.emplace_back( xDim, yDim, zDim );
 	
 	DiscreteBox3 box( corners );
+	
+	// COM potential is a bit tricker and needs lattice range
+	ContinuousPoint3 desiredCOM( 1, 1, 2 );
+	std::vector<DiscretePoint3> comPoints;
+	DiscreteBox3::Operator pushOp =
+		boost::bind( &AddCOMPoint, boost::ref(comPoints), _1 );
+	box.Iterate( pushOp );
+	AssemblySlot::PotentialConstructor comConstructor =
+		boost::bind( &CreateCOMPotential, _1, _2, _3, _4, desiredCOM );
+	AssemblySlot::Ptr comSlot =
+		std::make_shared<AssemblySlot>( comPoints, comConstructor );
+// 
+	aconst.AddSlot( comSlot );
+		
 	DiscreteBox3::Operator addOp =
 		boost::bind( &AssemblyConstructor::AddVoxel, &aconst,
 					 boost::ref(assembly), _1 );
 	box.Iterate( addOp );
+	
+	// Once voxels are added, add potentials
+	aconst.BuildPotentials( assembly );
 
 	std::cout << "Created " << assembly.GetField().NumPotentials() << " potentials." << std::endl;
 
 	// Add some dummy blocks to visualize
-	assembly.GetBlock( 0 )->SetState( BLOCK_FULL );
-	assembly.GetBlock( 1 )->SetState( BLOCK_HALF );
-	assembly.GetBlock( 2 )->SetState( BLOCK_FULL );
+ 	unsigned int id = assembly.GetLattice().GetNodeID( DiscretePoint3(2,2,0) );
+ 	assembly.GetBlock( id )->SetState( BLOCK_FULL );
 
 	// Visualize the assembly
 	RendererManager rman( "Output", 600, 600 );
@@ -128,10 +158,10 @@ int main() {
 
 	MCMCSampler sampler;
 	unsigned int sampleSize = 10;
-	for( unsigned int i = 0; i < 100; i++ ) {
+	while(true) {
 		sampler.Sample( assembly.GetField(), sampleSize );
-		aviz.Visualize( assembly );
-		usleep( 1E6 );
+ 		aviz.Visualize( assembly );
+		usleep( 1E5 );
 	}
 	
 	pause();

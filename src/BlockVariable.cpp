@@ -1,6 +1,8 @@
 #include "intelligent/BlockVariable.h"
 #include "intelligent/RandomDistributions.h"
 
+#include <sstream>
+
 namespace intelligent {
 
 	BlockVariable::BlockVariable( const GibbsField& _field, unsigned int _id ) : GibbsVariable( _field, _id ) {
@@ -37,7 +39,9 @@ namespace intelligent {
 			state = BLOCK_FULL;
 		}
 		else {
-			throw std::runtime_error( "Received invalid sample index." );
+			std::stringstream ss;
+			ss << "Received invalid sample index of " << ind << std::endl;
+			throw std::runtime_error( ss.str() );
 		}
 	}
 

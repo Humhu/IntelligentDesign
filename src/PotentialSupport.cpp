@@ -1,6 +1,8 @@
 #include "intelligent/PotentialSupport.h"
 #include "intelligent/BlockVariable.h"
+
 #include <memory>
+#include <cmath>
 
 namespace intelligent {
 
@@ -39,14 +41,14 @@ namespace intelligent {
 		double points = 0;
 			
 		// if I have a block above me, I get 1*state-of-above-block points
-		points = points + blanket_val[1];
+		points = points + 3*blanket_val[1];
 		
-		// if I have a block underneath me, I get 100*state-of-below-block points
+		// if I have a block underneath me, I get 3*state-of-below-block points
 		points = points + 3*blanket_val[2];
 		
 		// for every block on my side, I get sum(20*state-of-side-block) points for each side block
-		for(int i=3; i<6; i++){
-			points = points + 1.25*blanket_val[i];
+		for(int i=3; i<=6; i++){
+			points = points + 1*blanket_val[i];
 		}
 		
 		// ok, those are all the points based on my neighbors. the max points are if every neighbor is 
@@ -55,20 +57,31 @@ namespace intelligent {
 		// 6 and 9 I should be full. SO, if I AM full and I have a high score, I should be 1. Etc.
 		double me = blanket_val[0];
 		double prob = 0;
-		if ( me == 1 ) {
-			if (points >= 6) 			   {prob = 1;}
-			if (points < 6 && points >= 3) {prob = .5;}
-			if (points < 3 && points >= 0) {prob = 0;}    }
-		else if ( me == .5 ) {
-			if (points >= 6) 			   {prob = .5;}
-			if (points < 6 && points >= 3) {prob = 1;}
-			if (points < 3 && points >= 0) {prob = .5;}   }
-		else {
-			if (points >= 6) 			   {prob = 0;}
-			if (points < 6 && points >= 3) {prob = .5;}
-			if (points < 3 && points >= 0) {prob = 1;}    }	
-			
-		// then, the potential returned is exp(sum-of-all-points)
+
+		// Old switch code
+// 		if ( me == 1 ) {
+// 			if (points >= 6)	   			    {prob = 1;}
+// 			else if (points < 6 && points >= 3) {prob = .75;}
+// 			else if (points < 3 ) 				{prob = 0;}
+// 		}
+// 		else if ( me == .5 ) {
+// 			if (points >= 6) 			   		{prob = 1;}
+// 			else if (points < 6 && points > 2.5) {prob = 0.75;}
+// 			else if (points <= 2.5 && points > 0) 	{prob = .5;}
+// 			else if (points == 0 ) 				{prob = 0;}
+// 		}
+// 		else { // me == 0
+// 			if (points >= 6) 			   {prob = 0.2;}
+// 			else if (points < 6 && points >= 3) {prob = 0.5;}
+// 			else if (points < 3 && points >= 0) {prob = 1;}
+// 		}
+
+		if( me == 0 ) {
+			return 0.1;
+		}
+		
+		double econst = -1.0/me;
+		prob = 1 - std::exp( econst*points );
 		return prob;
 	}
 				

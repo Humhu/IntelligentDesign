@@ -60,6 +60,9 @@ namespace intelligent {
 		/*! \brief Adds the specified voxel to the assembly. */
 		void AddVoxel( DiscreteAssembly& assembly, const DiscretePoint3& pos );
 
+		/*! \brief Check all slots over all positions. */
+		void BuildPotentials( DiscreteAssembly& assembly );
+		
 	private:
 
 		VariableConstructor constructor;

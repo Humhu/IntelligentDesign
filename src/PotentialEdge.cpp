@@ -13,22 +13,31 @@ namespace intelligent {
 		unsigned int node_id = _variableIDs[0];
 												  
 		// send node id to lattice to get node x,y in lattice
-		int nodeX = _lattice.GetNodePosition( node_id ).x;
-		int nodeY = _lattice.GetNodePosition( node_id ).y;
+		DiscretePoint3 pos = _lattice.GetNodePosition( node_id );
+		int nodeX = pos.x;
+		int nodeY = pos.y;
+		int nodeZ = pos.z;
+
+		DiscreteBox3 bounds = _lattice.GetBoundingBox();
 		
 		bool xEdge = false;
-		if (nodeX == _lattice.GetBoundingBox().maxX && nodeX == _lattice.GetBoundingBox().minX) {
+		if (nodeX == bounds.maxX || nodeX == bounds.minX) {
 			xEdge = true;			
 		}
 		else {xEdge = false;}
 		
 		bool yEdge = false;
-		if (nodeY == _lattice.GetBoundingBox().maxY && nodeY == _lattice.GetBoundingBox().minY) {
+		if (nodeY == bounds.maxY || nodeY == bounds.minY) {
 			yEdge = true;			
 		}
 		else {yEdge = false;}
+
+		bool zEdge = false;
+		if( nodeZ == bounds.maxZ ) {
+			zEdge = true;
+		}
 		
-		edge = xEdge || yEdge;
+		edge = xEdge || yEdge || zEdge;
 		
 	}  
   
@@ -55,13 +64,11 @@ namespace intelligent {
 		}
 		
 		double me = blanket_val[0];
-		double prob = 0;
-		if (edge) {
-			if (me == 0) {prob = 1;}
-			else {prob = 0;}
-		}	
-		else {prob = 1;}
-			
+		double prob = 1;
+		if (edge && me != 0) {
+			prob = 0;
+		}
+		
 		return prob;
 	}
 				

@@ -26,6 +26,7 @@ namespace intelligent {
 		for( unsigned int i = 0 ; i < numSamples; i++ ) {
 
 			int index = uid(generator);
+			std::cout << "Sampling index " << index << std::endl;
 			assert(variables[index] != nullptr);
 			variables[ index ]->Sample( rid(generator) );
 		}

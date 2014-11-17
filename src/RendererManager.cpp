@@ -2,12 +2,13 @@
 
 #include <vtkArrowSource.h>
 #include <vtkTransform.h>
-#include <vtkAxesActor.h>
 #include <vtkCubeSource.h>
 #include <vtkLineSource.h>
 #include <vtkPlaneSource.h>
 #include <vtkPolyDataMapper.h>
+#include <vtkTransformPolyDataFilter.h>
 #include <vtkProperty.h>
+#include <vtkMath.h>
 
 #include <stdexcept>
 
@@ -34,6 +35,14 @@ namespace intelligent {
 		showEdges = true;
 		edgeColor = Color( 0.0, 0.0, 0.0 );
 	}
+
+	ArrowRenderRequest::ArrowRenderRequest() {
+		tipLength = 0.35;
+		tipRadius = 0.1;
+		tipResolution = 10;
+		shaftRadius = 0.03;
+		shaftResolution = 10;
+	}
 	
 	RenderRequestVisitor::RenderRequestVisitor( RendererManager& _manager ) :
 		manager( _manager ) {}
@@ -44,30 +53,21 @@ namespace intelligent {
 		vtkCubeSource* cube;
 		vtkSmartPointer<vtkActor> actor;
 
-		if( manager.registry.count( request.id ) == 0 ) {
+		vtkSmartPointer<vtkCubeSource> cu = vtkSmartPointer<vtkCubeSource>::New();
+		vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
+		actor = vtkSmartPointer<vtkActor>::New();
 
-			vtkSmartPointer<vtkCubeSource> cu = vtkSmartPointer<vtkCubeSource>::New();
-			vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
-			actor = vtkSmartPointer<vtkActor>::New();
+		pdm->SetInputConnection( cu->GetOutputPort() );
+		actor->SetMapper( pdm );
+		manager.renderer->AddActor( actor );
 
-			pdm->SetInputConnection( cu->GetOutputPort() );
-			actor->SetMapper( pdm );
-			manager.renderer->AddActor( actor );
-			
-			RendererManager::RenderRegistration registration;
-			registration.algorithm = cu;
-			registration.mapper = pdm;
-			registration.actor = actor;
-			manager.registry[ request.id ] = registration;
+		RendererManager::RenderRegistration registration;
+		registration.algorithms.push_back( cu );
+		registration.mapper = pdm;
+		registration.actor = actor;
+		manager.registry[ request.id ] = registration;
 
-			cube = cu.GetPointer();
-		}
-		else {
-			RendererManager::RenderRegistration registration = manager.registry[ request.id ];
-
-			actor = registration.actor;
-			cube = dynamic_cast<vtkCubeSource*>( registration.algorithm.GetPointer() );
-		}
+		cube = cu.GetPointer();
 
 		cube->SetCenter( request.center[0], request.center[1], request.center[2] );
 		cube->SetXLength( request.lengths[0] );
@@ -82,31 +82,22 @@ namespace intelligent {
 
 		vtkLineSource* line;
 		vtkSmartPointer<vtkActor> actor;
+		
+		vtkSmartPointer<vtkLineSource> li = vtkSmartPointer<vtkLineSource>::New();
+		vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
+		actor = vtkSmartPointer<vtkActor>::New();
 
-		if( manager.registry.count( request.id ) == 0 ) { 
+		pdm->SetInputConnection( li->GetOutputPort() );
+		actor->SetMapper( pdm );
+		manager.renderer->AddActor( actor );
 
-			vtkSmartPointer<vtkLineSource> li = vtkSmartPointer<vtkLineSource>::New();
-			vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
-			actor = vtkSmartPointer<vtkActor>::New();
+		RendererManager::RenderRegistration registration;
+		registration.algorithms.push_back( li );
+		registration.mapper = pdm;
+		registration.actor = actor;
+		manager.registry[ request.id ] = registration;
 
-			pdm->SetInputConnection( li->GetOutputPort() );
-			actor->SetMapper( pdm );
-			manager.renderer->AddActor( actor );
-
-			RendererManager::RenderRegistration registration;
-			registration.algorithm = li;
-			registration.mapper = pdm;
-			registration.actor = actor;
-			manager.registry[ request.id ] = registration;
-
-			line = li.GetPointer();
-		}
-		else {
-			RendererManager::RenderRegistration registration = manager.registry[ request.id ];
-
-			actor = registration.actor;
-			line = dynamic_cast<vtkLineSource*>( registration.algorithm.GetPointer() );
-		}
+		line = li.GetPointer();
 
 		line->SetPoint1( request.start[0], request.start[1], request.start[2] );
 		line->SetPoint2( request.finish[0], request.finish[1], request.finish[2] );
@@ -115,35 +106,101 @@ namespace intelligent {
 		
 	}
 
+	void RenderRequestVisitor::operator()( const ArrowRenderRequest& request ) {
+
+		// Create arrow
+		vtkSmartPointer<vtkArrowSource> arrow = vtkSmartPointer<vtkArrowSource>::New();
+		
+		// Compute a basis
+		double normalizedX[3];
+		double normalizedY[3];
+		double normalizedZ[3];
+		
+		// The X axis is a vector from start to end
+		vtkMath::Subtract(request.finish, request.start, normalizedX);
+		double length = vtkMath::Norm(normalizedX);
+		vtkMath::Normalize(normalizedX);
+		
+		// The Z axis is an arbitrary vector cross X
+		double arbitrary[3];
+		arbitrary[0] = vtkMath::Random(-1,1);
+		arbitrary[1] = vtkMath::Random(-1,1);
+		arbitrary[2] = vtkMath::Random(-1,1);
+		vtkMath::Cross(normalizedX, arbitrary, normalizedZ);
+		vtkMath::Normalize(normalizedZ);
+		
+		// The Y axis is Z cross X
+		vtkMath::Cross(normalizedZ, normalizedX, normalizedY);
+		vtkSmartPointer<vtkMatrix4x4> matrix =
+			vtkSmartPointer<vtkMatrix4x4>::New();
+		
+		// Create the direction cosine matrix
+		matrix->Identity();
+		for (unsigned int i = 0; i < 3; i++)
+		{
+			matrix->SetElement(i, 0, normalizedX[i]);
+			matrix->SetElement(i, 1, normalizedY[i]);
+			matrix->SetElement(i, 2, normalizedZ[i]);
+		}
+		
+		// Apply the transforms
+		vtkSmartPointer<vtkTransform> transform =
+			vtkSmartPointer<vtkTransform>::New();
+		transform->Translate(request.start);
+		transform->Concatenate(matrix);
+		transform->Scale(length, length, length);
+		
+		// Transform the polydata
+		vtkSmartPointer<vtkTransformPolyDataFilter> transformPD =
+			vtkSmartPointer<vtkTransformPolyDataFilter>::New();
+		transformPD->SetTransform(transform);
+		transformPD->SetInputConnection(arrow->GetOutputPort());
+
+		vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
+		pdm->SetInputConnection( transformPD->GetOutputPort() );
+
+		vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+		actor->SetMapper( pdm );
+		manager.renderer->AddActor( actor );
+		
+		RendererManager::RenderRegistration registration;
+		registration.algorithms.push_back(arrow);
+		registration.algorithms.push_back(transformPD);
+		registration.mapper = pdm;
+		registration.actor = actor;
+		manager.registry[ request.id ] = registration;
+		
+		// Set arrow properties
+		arrow->SetTipLength( request.tipLength );
+		arrow->SetTipRadius( request.tipRadius );
+		arrow->SetTipResolution( request.tipResolution );
+		arrow->SetShaftRadius( request.shaftRadius );
+		arrow->SetShaftResolution( request.shaftResolution );
+		
+		SetActorProperties( actor, request );
+
+	}
+	
 	void RenderRequestVisitor::operator()( const PlaneRenderRequest& request ) {
 
 		vtkPlaneSource* plane;
 		vtkSmartPointer<vtkActor> actor;
 		
-		if( manager.registry.count( request.id ) == 0 ) {
-			
-			vtkSmartPointer<vtkPlaneSource> pl = vtkSmartPointer<vtkPlaneSource>::New();
-			vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
-			actor = vtkSmartPointer<vtkActor>::New();
-			
-			pdm->SetInputConnection( pl->GetOutputPort() );
-			actor->SetMapper( pdm );
-			manager.renderer->AddActor( actor );
-			
-			RendererManager::RenderRegistration registration;
-			registration.algorithm = pl;
-			registration.mapper = pdm;
-			registration.actor = actor;
-			manager.registry[ request.id ] = registration;
-			
-			plane = pl.GetPointer();
-		}
-		else {
-			RendererManager::RenderRegistration registration = manager.registry[ request.id ];
-			
-			actor = registration.actor;
-			plane = dynamic_cast<vtkPlaneSource*>( registration.algorithm.GetPointer() );
-		}
+		vtkSmartPointer<vtkPlaneSource> pl = vtkSmartPointer<vtkPlaneSource>::New();
+		vtkSmartPointer<vtkPolyDataMapper> pdm = vtkSmartPointer<vtkPolyDataMapper>::New();
+		actor = vtkSmartPointer<vtkActor>::New();
+
+		pdm->SetInputConnection( pl->GetOutputPort() );
+		actor->SetMapper( pdm );
+		manager.renderer->AddActor( actor );
+
+		RendererManager::RenderRegistration registration;
+		registration.algorithms.push_back( pl );
+		registration.mapper = pdm;
+		registration.actor = actor;
+		manager.registry[ request.id ] = registration;
+
+		plane = pl.GetPointer();
 		
 		plane->SetOrigin( request.center[0], request.center[1], request.center[2] );
 		plane->SetPoint1( request.center[0] + request.lengths[0], request.center[1],
@@ -164,6 +221,8 @@ namespace intelligent {
 			manager.renderer->RemoveActor( item.second.actor );
 		}
 		manager.registry.clear();
+
+		// TODO Check clearAll flag instead of always clearing all
 	}
 
 	void RenderRequestVisitor::SetActorProperties( vtkSmartPointer<vtkActor>& actor,

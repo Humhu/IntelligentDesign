@@ -3,9 +3,16 @@
 #include "intelligent/DiscretePoint.h"
 
 #include <memory>
+#include <cmath>
 
 namespace intelligent {
 
+	ContinuousPoint3::ContinuousPoint3() :
+		x(0), y(0), z(0) {}
+		
+	ContinuousPoint3::ContinuousPoint3( double _x, double _y, double _z ) :
+		x( _x ), y( _y ), z( _z ) {}
+	
 	PotentialCOM::PotentialCOM(const GibbsField & _field, unsigned int _id,
 		const std::vector<unsigned int> & _vids, const Lattice & _lattice) 
 	: GibbsPotential(_field, _id, _vids)
@@ -15,11 +22,12 @@ namespace intelligent {
 		auto dx = bbox.maxX - bbox.minX + 1;
 		auto dy = bbox.maxY - bbox.minY + 1;
 		auto dz = bbox.maxZ - bbox.minZ + 1;
-		DiscretePoint3 com;
+		ContinuousPoint3 com;
 		com.x = bbox.minX + dx/2;
 		com.y = bbox.minY + dy/2;
 		com.z = bbox.minZ;
 		SetDesiredCOM(com);
+		std::cout << "Constructing COM potential." << std::endl;
 	}  
     
 	// FIXME: Pointer to lattice and desiredCOM
@@ -33,12 +41,29 @@ namespace intelligent {
 		return std::make_shared<PotentialCOM>(_field, *this);
 	}
 
-	void PotentialCOM::SetDesiredCOM(const DiscretePoint3 & _com) {
+	void PotentialCOM::SetDesiredCOM(const ContinuousPoint3 & _com) {
 		desiredCOM = _com;
 	}
 	
 	double PotentialCOM::CalculatePotential() {
-		const auto & bbox = lattice->GetBoundingBox(); 
+
+		ContinuousPoint3 com = CalculateCOM();
+		
+		auto dx = std::abs(com.x - desiredCOM.x);
+		auto dy = std::abs(com.y - desiredCOM.y);
+		auto dz = std::abs(com.z - desiredCOM.z);
+
+// 		double p = 1;
+// 		if( dx + dy + dz > 4 ) {
+// 			p = 0.01;
+// 		}
+		double p = std::exp( -(dx + dy + dz) );
+// 		std::cout << "p: " << p << " for com: " << com.x << ", " << com.y << ", " << com.z << std::endl;
+		return p;
+	}
+
+	ContinuousPoint3 PotentialCOM::CalculateCOM() {
+		const auto & bbox = lattice->GetBoundingBox();
 		std::vector<GibbsVariable::Ptr> clique = GetClique();
 		BlockVariable::Ptr blockVariable;
 		DiscretePoint3 blockPosition;
@@ -49,31 +74,21 @@ namespace intelligent {
 			blockVariable = std::dynamic_pointer_cast<BlockVariable>(clique[i]);
 			blockPosition = lattice->GetNodePosition(blockVariable->id);
 			switch (blockVariable->GetState()) {
-			case BLOCK_FULL:  mass = 1.0; break;
-			case BLOCK_HALF:  mass = 0.5; break;
-			case BLOCK_EMPTY: mass = 0.0; break;
-			default: throw std::runtime_error("Invalid block state");
+				case BLOCK_FULL:  mass = 1.0; break;
+				case BLOCK_HALF:  mass = 0.5; break;
+				case BLOCK_EMPTY: mass = 0.0; break;
+				default: throw std::runtime_error("Invalid block state");
 			}
 			totalMass += mass;
-			cx += mass * (blockPosition.x - bbox.minX);
-			cy += mass * (blockPosition.y - bbox.minY);
-			cz += mass * (blockPosition.z - bbox.minZ);
+			cx += mass * blockPosition.x;
+			cy += mass * blockPosition.y;
+			cz += mass * blockPosition.z;
 		}
-		cx /= totalMass;
-		cy /= totalMass;
-		cz /= totalMass;
-		auto dx = std::abs(cx + bbox.minX - desiredCOM.x)
-		        / std::max(std::abs(bbox.maxX-desiredCOM.x),
-		                   std::abs(bbox.minX-desiredCOM.x));
-		auto dy = std::abs(cy + bbox.minY - desiredCOM.y)
-		        / std::max(std::abs(bbox.maxY-desiredCOM.y),
-		                   std::abs(bbox.minY-desiredCOM.y));
-		auto dz = std::abs(cz + bbox.minZ - desiredCOM.z)
-		        / std::max(std::abs(bbox.maxZ-desiredCOM.z),
-		                   std::abs(bbox.minZ-desiredCOM.z));
-		double p = (dx + dy + dz)/3.0;
-		
-		return p;
+		ContinuousPoint3 com;
+		com.x = cx/totalMass;
+		com.y = cy/totalMass;
+		com.z = cz/totalMass;
+		return com;
 	}
 				
 }

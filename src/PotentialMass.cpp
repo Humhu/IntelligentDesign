@@ -37,8 +37,8 @@ namespace intelligent {
 		
 		// we want to reward low weights.
 		double prob = 0;
-		if ( me == 1 ) {prob = 0;} 
-		else if ( me == .5 ) {prob = .5;} 
+		if ( me == 1 ) {prob = 0.5;} 
+		else if ( me == .5 ) {prob = 0.75;}
 		else {prob = 1;} 
 			
 		return prob;

@@ -89,9 +89,18 @@ namespace intelligent {
 
 		assembly.GetLattice().AddNode( nodeID, pos );
 
+	}
+
+	void AssemblyConstructor::BuildPotentials( DiscreteAssembly& assembly ) {
+
+		DiscreteBox3 range = assembly.GetLattice().GetBoundingBox();
+		
 		BOOST_FOREACH( const AssemblySlot::Ptr& slot, slots ) {
-			slot->UpdateSlot( assembly, pos );
-		}
+			DiscreteBox3::Operator updateOp =
+				boost::bind( &AssemblySlot::UpdateSlot, slot.get(), boost::ref(assembly), _1 );
+			
+			range.Iterate( updateOp );
+		}		
 	}
 	
 }
