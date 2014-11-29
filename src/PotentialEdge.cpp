@@ -41,12 +41,13 @@ namespace intelligent {
 		
 	}  
   
-	PotentialEdge::PotentialEdge( const GibbsField& _field, const GibbsPotential& other ) : 
-									GibbsPotential( _field, other ) {
-	}
+	PotentialEdge::PotentialEdge( const GibbsField& _field, const PotentialEdge& other ) :
+		GibbsPotential( _field, other ),
+		edge( other.edge ) {}
 
 	GibbsPotential::Ptr PotentialEdge::Clone( const GibbsField& _field ){
-		std::shared_ptr<GibbsPotential> pointer( new PotentialEdge( _field, *this ) );
+		std::shared_ptr<GibbsPotential> pointer =
+			std::make_shared<PotentialEdge>( _field, *this );
 		return pointer;
 	}
 			
@@ -67,6 +68,7 @@ namespace intelligent {
 		double prob = 1;
 		if (edge && me != 0) {
 			prob = 0;
+			std::cout << "Edge!" << std::endl;
 		}
 		
 		return prob;

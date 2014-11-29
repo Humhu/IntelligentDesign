@@ -1,27 +1,32 @@
 #ifndef _POTENTIAL_MASS_
 #define _POTENTIAL_MASS_
+
+#include "intelligent/BlockVariable.h"
 #include "intelligent/GibbsField.h"
 
-
 namespace intelligent {
-	
-	// we will order the id's so that the markov blanket comes in ordered as:
-	// self, top, bottom, 4 sides
 
+	/*! \brief Penalizes an assembly for having large mass. */
 	class PotentialMass : public GibbsPotential {
 	public:
 
 		typedef std::shared_ptr<PotentialMass> Ptr;
 		
 		PotentialMass( const GibbsField& _field, unsigned int _id,
-						  const std::vector<unsigned int>& _variableIDs );
+					   const std::vector<unsigned int>& _variableIDs,
+					   double _massCoeff, double _maxMass );
 
-		PotentialMass( const GibbsField& _field, const GibbsPotential& other );
+		PotentialMass( const GibbsField& _field, const PotentialMass& other );
 
 		virtual GibbsPotential::Ptr Clone( const GibbsField& _field );
 		
 		virtual double CalculatePotential();
 
+	private:
+
+		double massCoeff;
+		double maxMass;
+		
 	};
 
 }

@@ -14,27 +14,7 @@ namespace intelligent {
 		constructor( _constructor ) {}
 
 	void AssemblySlot::UpdateSlot( DiscreteAssembly& assembly,
-								   const DiscretePoint3& added ) {
-
-		DiscreteBox3 centeredBox = boundingBox;
-		centeredBox.Shift( added );
-
-		// For each point in the bounds of the slot centered on the new node, see if
-		// this slot at that point can construct a potential.
-		DiscreteBox3::Operator op =
-			boost::bind( &AssemblySlot::CheckPoint, this, boost::ref(assembly), added, _1 );
-			
-		centeredBox.Iterate( op );
-	}
-	
-	void AssemblySlot::CheckPoint( DiscreteAssembly& assembly,
-								   const DiscretePoint3& added,
 								   const DiscretePoint3& query ) {
-
-		// If the new point is not in the clique of the query point, its addition
-		// cannot result in the construction of a potential. This check also makes
-		// sure we never double-construct a slot potential.
-		if( !InClique( query, added ) ) { return; }
 
 		std::vector<unsigned int> ids;
 		BOOST_FOREACH( const DiscretePoint3& offset, points ) {
@@ -44,7 +24,7 @@ namespace intelligent {
 				ids.push_back( assembly.GetLattice().GetNodeID( pos ) );
 			}
 			catch ( std::out_of_range e ) {
-				// This means the slot's nodes do not all exist yet
+				// This means the slot's nodes do not all exist
 				return;
 			}
 		}
@@ -54,25 +34,24 @@ namespace intelligent {
 		GibbsPotential::Ptr pot = constructor( assembly.GetField(), assembly.GetLattice(),
 											   potID, ids );
 		assembly.GetField().AddPotential( pot );
-
+		
 		// Also update the corresponding variables with the new potential
 		BOOST_FOREACH( unsigned int varID, ids ) {
 			GibbsVariable::Ptr var = assembly.GetField().GetVariable( varID );
 			var->AddPotential( potID );
 		}
-		
 	}
 
-	bool AssemblySlot::InClique( const DiscretePoint3& base, const DiscretePoint3& query ) const {
-
-		DiscretePoint3 offset = query - base;
-		BOOST_FOREACH( const DiscretePoint3& point, points ) {
-			if( point == offset ) {
-				return true;
-			}
-		}
-		return false;
-	}
+// 	bool AssemblySlot::InClique( const DiscretePoint3& base, const DiscretePoint3& query ) const {
+// 
+// 		DiscretePoint3 offset = query - base;
+// 		BOOST_FOREACH( const DiscretePoint3& point, points ) {
+// 			if( point == offset ) {
+// 				return true;
+// 			}
+// 		}
+// 		return false;
+// 	}
 
 	AssemblyConstructor::AssemblyConstructor( VariableConstructor _constructor ) :
 		constructor( _constructor ) {}

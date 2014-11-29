@@ -1,47 +1,67 @@
 #include "intelligent/PotentialMass.h"
 #include "intelligent/BlockVariable.h"
+
 #include <memory>
+#include <cmath>
+#include <iostream>
 
 namespace intelligent {
 
 	PotentialMass::PotentialMass( const GibbsField& _field, unsigned int _id,
-									const std::vector<unsigned int>& _variableIDs ) : 
-									GibbsPotential( _field, _id,_variableIDs ) {
-	}  
-  
-	PotentialMass::PotentialMass( const GibbsField& _field, const GibbsPotential& other ) : 
-									GibbsPotential( _field, other ) {
-	}
+								  const std::vector<unsigned int>& _variableIDs,
+								  double _massCoeff, double _maxMass ) :
+		GibbsPotential( _field, _id,_variableIDs ),
+		massCoeff( _massCoeff ),
+		maxMass( _maxMass ) {
 
-	GibbsPotential::Ptr PotentialMass::Clone( const GibbsField& _field ){
-		std::shared_ptr<GibbsPotential> pointer( new PotentialMass( _field, *this ) );
+		std::cout << "Constructing mass potential." << std::endl;
+	}
+  
+	PotentialMass::PotentialMass( const GibbsField& _field, const PotentialMass& other ) :
+		GibbsPotential( _field, other ),
+		massCoeff( other.massCoeff ),
+		maxMass( other.maxMass ) {}
+
+	GibbsPotential::Ptr PotentialMass::Clone( const GibbsField& _field ) {
+		std::shared_ptr<GibbsPotential> pointer =
+			std::make_shared<PotentialMass>( _field, *this );
 		return pointer;
 	}
 			
-	double PotentialMass::CalculatePotential(){
-		
-		std::vector < GibbsVariable :: Ptr > clique = GetClique() ;
+	double PotentialMass::CalculatePotential() {
 
-		std::vector < BlockVariable :: Ptr > markov_blanket( clique.size() );
-		std::vector < double > blanket_val( clique.size() );
-		// for(unsigned int i=0; i<clique.size(); i++) { 
-			markov_blanket[0] = std::dynamic_pointer_cast <BlockVariable>( clique[0] );
-			if ( markov_blanket[0]->GetState() == BLOCK_FULL ) { blanket_val[0] = 1; }
-			else if ( markov_blanket[0]->GetState() == BLOCK_HALF ) { blanket_val[0] = .5; }
-			else { blanket_val[0] = 0; }
-		//}
+		// Get summed mass over whole clique (assembly)
+		std::vector <GibbsVariable::Ptr> clique = GetClique();
+
+		double totalMass = 0;
+		for(unsigned int i = 0; i < clique.size(); i++) {
+
+			BlockType type = std::dynamic_pointer_cast<BlockVariable>( clique[i] )->GetState();
+
+			switch( type ) {
+				case BLOCK_FULL:
+					totalMass += 1.0;
+					break;
+				case BLOCK_HALF:
+					totalMass += 0.5;
+					break;
+				default:
+					break;
+			}
+		}
+
+		double p = 1.0;
+		// we want to reward low masses
+		if( totalMass > maxMass ) {
+			p = 0;
+		}
+		else {
+			p = std::exp( massCoeff*totalMass );
+		}
+
+		std::cout << "p: " << p << " for mass " << totalMass << std::endl;
+		return p;
 		
-		// GetClique returned pointers in the order: self, top, bottom, sides.
-		// here, we only look at the value for ourself
-		double me = blanket_val[0];
-		
-		// we want to reward low weights.
-		double prob = 0;
-		if ( me == 1 ) {prob = 0.5;} 
-		else if ( me == .5 ) {prob = 0.75;}
-		else {prob = 1;} 
-			
-		return prob;
 	}
 				
 }

@@ -18,7 +18,7 @@ namespace intelligent {
 					   const std::vector<unsigned int>& _variableIDs,
 					   const Lattice& _lattice );
 
-		PotentialEdge( const GibbsField& _field, const GibbsPotential& other );
+		PotentialEdge( const GibbsField& _field, const PotentialEdge& other );
 
 		virtual GibbsPotential::Ptr Clone( const GibbsField& _field );
 		

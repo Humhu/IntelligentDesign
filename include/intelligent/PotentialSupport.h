@@ -15,7 +15,7 @@ namespace intelligent {
 		PotentialSupport( const GibbsField& _field, unsigned int _id,
 						  const std::vector<unsigned int>& _variableIDs );
 
-		PotentialSupport( const GibbsField& _field, const GibbsPotential& other );
+		PotentialSupport( const GibbsField& _field, const PotentialSupport& other );
 
 		virtual GibbsPotential::Ptr Clone( const GibbsField& _field );
 		

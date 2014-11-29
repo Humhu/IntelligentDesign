@@ -1,8 +1,8 @@
 #ifndef _POTENTIAL_HEIGHT_
 #define _POTENTIAL_HEIGHT_
+
 #include "intelligent/GibbsField.h"
 #include "intelligent/Lattice.h"
-
 
 namespace intelligent {
 	
@@ -18,11 +18,13 @@ namespace intelligent {
 					   const std::vector<unsigned int>& _variableIDs,
 					   const Lattice& _lattice );
 
-		PotentialHeight( const GibbsField& _field, const GibbsPotential& other );
+		PotentialHeight( const GibbsField& _field, const PotentialHeight& other );
 
 		virtual GibbsPotential::Ptr Clone( const GibbsField& _field );
 		
 		virtual double CalculatePotential();
+
+	private:
 		
 		int nodeHeight;
 		int latticeHeight;

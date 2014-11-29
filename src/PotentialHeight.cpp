@@ -16,12 +16,14 @@ namespace intelligent {
 		
 	}  
   
-	PotentialHeight::PotentialHeight( const GibbsField& _field, const GibbsPotential& other ) : 
-									  GibbsPotential( _field, other ) {
-	}
+	PotentialHeight::PotentialHeight( const GibbsField& _field, const PotentialHeight& other ) :
+		GibbsPotential( _field, other ),
+		nodeHeight( other.nodeHeight ),
+		latticeHeight( other.latticeHeight ) {}
 
 	GibbsPotential::Ptr PotentialHeight::Clone( const GibbsField& _field ){
-		std::shared_ptr<GibbsPotential> pointer( new PotentialHeight( _field, *this ) );
+		std::shared_ptr<GibbsPotential> pointer =
+			std::make_shared<PotentialHeight>( _field, *this );
 		return pointer;
 	}
 			
@@ -42,10 +44,10 @@ namespace intelligent {
 		// here, we only look at the value for ourself
 		double me = blanket_val[0];
 		
-		// we want to reward low weights.
-		double prob = nodeHeight/latticeHeight;
+		// we want to reward high non-empty blocks
+		double prob = nodeHeight;
 		if ( me == 0 ) {
-			prob = 0.01;
+			prob = 1;
 		}
 			
 		return prob;

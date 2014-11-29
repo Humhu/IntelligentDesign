@@ -11,6 +11,7 @@ set( IntelligentDesign_SOURCES
 	 MCMCSampler.cpp
 	 PotentialCOM.cpp
 	 PotentialEdge.cpp
+	 PotentialFixed.cpp
 	 PotentialHeight.cpp
 	 PotentialMass.cpp
 	 PotentialSupport.cpp

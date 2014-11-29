@@ -34,13 +34,9 @@ namespace intelligent {
 		const std::vector<DiscretePoint3> points;
 		const PotentialConstructor& constructor;
 		
-		/*! \brief Attempt to construct a potential centered at the query position. */
-		void CheckPoint( DiscreteAssembly& assembly,
-						 const DiscretePoint3& added, const DiscretePoint3& query );
-		
-		/*! \brief Returns if the query position is in the clique centered at
-		 * the base position. */
-		bool InClique( const DiscretePoint3& base, const DiscretePoint3& query ) const;
+// 		/*! \brief Returns if the query position is in the clique centered at
+// 		 * the base position. */
+// 		bool InClique( const DiscretePoint3& base, const DiscretePoint3& query ) const;
 
 	};
 

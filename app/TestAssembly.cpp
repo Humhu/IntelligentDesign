@@ -10,6 +10,7 @@
 #include "intelligent/PotentialMass.h"
 #include "intelligent/PotentialEdge.h"
 #include "intelligent/PotentialCOM.h"
+#include "intelligent/PotentialFixed.h"
 
 using namespace intelligent;
 
@@ -27,11 +28,6 @@ GibbsPotential::Ptr CreateHeightPotential( const GibbsField& field, const Lattic
 	return std::make_shared<PotentialHeight>( field, id, variableIDs, lattice );
 }
 
-GibbsPotential::Ptr CreateMassPotential( const GibbsField& field, const Lattice& lattice,
-										 unsigned int id, const std::vector<unsigned int>& variableIDs ) {
-	return std::make_shared<PotentialMass>( field, id, variableIDs );
-}
-
 GibbsPotential::Ptr CreateEdgePotential( const GibbsField& field, const Lattice& lattice,
 										 unsigned int id, const std::vector<unsigned int>& variableIDs ) {
 	return std::make_shared<PotentialEdge>( field, id, variableIDs, lattice );
@@ -46,8 +42,25 @@ GibbsPotential::Ptr CreateCOMPotential( const GibbsField& field, const Lattice& 
 	return pot;
 }
 
+GibbsPotential::Ptr CreateMassPotential( const GibbsField& field, const Lattice& lattice,
+										 unsigned int id, const std::vector<unsigned int>& variableIDs,
+										 double massCoeff, double maxMass ) {
+	return std::make_shared<PotentialMass>( field, id, variableIDs, massCoeff, maxMass );
+}
+
 void AddCOMPoint( std::vector<DiscretePoint3>& pts, const DiscretePoint3& p ) {
 	pts.push_back(p);
+}
+
+void AddInteriorPoint( std::vector<unsigned int>& inds, const Lattice& lattice,
+					   const DiscretePoint3& p ) {
+	DiscreteBox3 bounds = lattice.GetBoundingBox();
+	if( p.x == bounds.minX || p.x == bounds.maxX
+		|| p.y == bounds.minY || p.y == bounds.maxY
+		|| p.z == bounds.maxZ ) {
+		return;
+	}
+	inds.push_back( lattice.GetNodeID( p ) );
 }
 
 int main() {
@@ -60,42 +73,31 @@ int main() {
 
 	// Add the support potential slot
 	// Order for support slot is top, bottom, 4 sides (in no particular order)
-	std::vector<DiscretePoint3> supportPoints;
-	supportPoints.emplace_back( 0, 0, 0 );
-	supportPoints.emplace_back( 0, 0, 1 );
-	supportPoints.emplace_back( 0, 0, -1 );
-	supportPoints.emplace_back( 1, 0, 0 );
-	supportPoints.emplace_back(-1, 0, 0 );
-	supportPoints.emplace_back( 0, 1, 0 );
-	supportPoints.emplace_back( 0, -1, 0 );
+	std::vector<DiscretePoint3> supportPoints(7);
+	supportPoints[0] = DiscretePoint3( 0, 0, 0 );
+	supportPoints[1] = DiscretePoint3( 0, 0, 1 );
+	supportPoints[2] = DiscretePoint3( 0, 0, -1 );
+	supportPoints[3] = DiscretePoint3( 1, 0, 0 );
+	supportPoints[4] = DiscretePoint3( -1, 0, 0 );
+	supportPoints[5] = DiscretePoint3( 0, 1, 0 );
+	supportPoints[6] = DiscretePoint3( 0, -1, 0 );
 	AssemblySlot::PotentialConstructor supportConstructor =
 		boost::bind( &CreateSupportPotential, _1, _2, _3, _4 );
 	AssemblySlot::Ptr supportSlot =
 		std::make_shared<AssemblySlot>( supportPoints, supportConstructor );
 
-//  	aconst.AddSlot( supportSlot );
+ 	aconst.AddSlot( supportSlot );
 
 	// Add the height potential slot
 	// Unary slot only needs self
-// 	std::vector<DiscretePoint3> heightPoints;
-// 	heightPoints.emplace_back( 0, 0, 0 );
-// 	AssemblySlot::PotentialConstructor heightConstructor =
-// 		boost::bind( &CreateHeightPotential, _1, _2, _3, _4 );
-// 	AssemblySlot::Ptr heightSlot =
-// 		std::make_shared<AssemblySlot>( heightPoints, heightConstructor );
+	std::vector<DiscretePoint3> heightPoints;
+	heightPoints.emplace_back( 0, 0, 0 );
+	AssemblySlot::PotentialConstructor heightConstructor =
+		boost::bind( &CreateHeightPotential, _1, _2, _3, _4 );
+	AssemblySlot::Ptr heightSlot =
+		std::make_shared<AssemblySlot>( heightPoints, heightConstructor );
 
 // 	aconst.AddSlot( heightSlot );
-
-	// Add the mass unary slot
-	// Unary slot only needs self
-	std::vector<DiscretePoint3> massPoints;
-	massPoints.emplace_back( 0, 0, 0 );
-	AssemblySlot::PotentialConstructor massConstructor =
-		boost::bind( &CreateMassPotential, _1, _2, _3, _4 );
-	AssemblySlot::Ptr massSlot =
-		std::make_shared<AssemblySlot>( massPoints, massConstructor );
-
-// 	aconst.AddSlot( massSlot );
 
 	// Add the border unary slot
 	// Unary slot only needs self
@@ -106,12 +108,12 @@ int main() {
 	AssemblySlot::Ptr edgeSlot =
 		std::make_shared<AssemblySlot>( edgePoints, edgeConstructor );
 
-// 	aconst.AddSlot( edgeSlot );
+	aconst.AddSlot( edgeSlot );
 
 	// Lattice range
-	int xDim = 8;
-	int yDim = 8;
-	int zDim = 4;
+	int xDim = 4;
+	int yDim = 4;
+	int zDim = 7;
 	
 	std::vector<DiscretePoint3> corners;
 	corners.emplace_back( 0, 0, 0 );
@@ -125,19 +127,29 @@ int main() {
 	
 	DiscreteBox3 box( corners );
 	
-	// COM potential is a bit tricker and needs lattice range
-	ContinuousPoint3 desiredCOM( 1, 1, 2 );
-	std::vector<DiscretePoint3> comPoints;
+	// Get global IDs for global potentials
+	std::vector<DiscretePoint3> allPoints;
 	DiscreteBox3::Operator pushOp =
-		boost::bind( &AddCOMPoint, boost::ref(comPoints), _1 );
+		boost::bind( &AddCOMPoint, boost::ref(allPoints), _1 );
 	box.Iterate( pushOp );
+
+	// Make the global COM potential
+	ContinuousPoint3 desiredCOM( 1, 1, 2 );
 	AssemblySlot::PotentialConstructor comConstructor =
 		boost::bind( &CreateCOMPotential, _1, _2, _3, _4, desiredCOM );
 	AssemblySlot::Ptr comSlot =
-		std::make_shared<AssemblySlot>( comPoints, comConstructor );
-// 
-	aconst.AddSlot( comSlot );
-		
+		std::make_shared<AssemblySlot>( allPoints, comConstructor );
+//
+// 	aconst.AddSlot( comSlot );
+
+	// Make the global mass potential
+	AssemblySlot::PotentialConstructor massConstructor =
+		boost::bind( &CreateMassPotential, _1, _2, _3, _4, -0.1, 25.0 );
+	AssemblySlot::Ptr massSlot =
+		std::make_shared<AssemblySlot>( allPoints, massConstructor );
+
+	aconst.AddSlot( massSlot );
+	
 	DiscreteBox3::Operator addOp =
 		boost::bind( &AssemblyConstructor::AddVoxel, &aconst,
 					 boost::ref(assembly), _1 );
@@ -146,18 +158,37 @@ int main() {
 	// Once voxels are added, add potentials
 	aconst.BuildPotentials( assembly );
 
+	// Add a fix potential for the seed block manually
+	unsigned int seedID = assembly.GetLattice().GetNodeID( DiscretePoint3( 1, 1, 0 ) );
+	GibbsVariable::Ptr seedVar = assembly.GetField().GetVariable( seedID );
+	std::vector<unsigned int> seedClique;
+	seedClique.push_back( seedID );
+	PotentialFixed::Ptr fixPot =
+		std::make_shared<PotentialFixed>( assembly.GetField(),
+										  assembly.GetField().NumPotentials(),
+										  seedClique, BLOCK_FULL );
+	
+	seedVar->AddPotential( fixPot->id );
+	assembly.GetField().AddPotential( fixPot );
+	std::dynamic_pointer_cast<BlockVariable>( seedVar )->SetState( BLOCK_FULL );
+	
 	std::cout << "Created " << assembly.GetField().NumPotentials() << " potentials." << std::endl;
-
-	// Add some dummy blocks to visualize
- 	unsigned int id = assembly.GetLattice().GetNodeID( DiscretePoint3(2,2,0) );
- 	assembly.GetBlock( id )->SetState( BLOCK_FULL );
 
 	// Visualize the assembly
 	RendererManager rman( "Output", 600, 600 );
 	AssemblyVisualizer aviz( rman );
+	
+	// Pull indices for non-edge blocks
+	std::vector<unsigned int> interiorIDs;
+	DiscreteBox3::Operator intOp =
+		boost::bind( &AddInteriorPoint, boost::ref(interiorIDs),
+					 boost::ref(assembly.GetLattice()), _1 );
+	box.Iterate( intOp );
 
 	MCMCSampler sampler;
-	unsigned int sampleSize = 10;
+	sampler.SetIndexSet( interiorIDs );
+	
+	unsigned int sampleSize = 1;
 	while(true) {
 		sampler.Sample( assembly.GetField(), sampleSize );
  		aviz.Visualize( assembly );

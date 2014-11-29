@@ -3,6 +3,8 @@
 
 #include <memory>
 #include <cmath>
+#include <iostream>
+#include <stdexcept>
 
 namespace intelligent {
 
@@ -12,26 +14,41 @@ namespace intelligent {
 										
 	}  
   
-	PotentialSupport::PotentialSupport( const GibbsField& _field, const GibbsPotential& other ) : 
-									GibbsPotential( _field, other ) {
-	}
+	PotentialSupport::PotentialSupport( const GibbsField& _field,
+										const PotentialSupport& other ) :
+		GibbsPotential( _field, other ) {}
 
 	GibbsPotential::Ptr PotentialSupport::Clone( const GibbsField& _field ){
-		std::shared_ptr<GibbsPotential> pointer( new PotentialSupport( _field, *this ) );
+		std::shared_ptr<GibbsPotential> pointer =
+			std::make_shared<PotentialSupport>( _field, *this );
 		return pointer;
 	}
 			
 	double PotentialSupport::CalculatePotential(){
 		
-		std::vector < GibbsVariable :: Ptr > clique = GetClique() ;
+		std::vector <GibbsVariable::Ptr> clique = GetClique() ;
 
-		std::vector < BlockVariable :: Ptr > markov_blanket( clique.size() );
-		std::vector < double > blanket_val( clique.size() );
-		for(unsigned int i=0; i<clique.size(); i++) { //(int n=10; n>0; n--)
+		std::vector <BlockVariable::Ptr> markov_blanket( clique.size() );
+		std::vector <double> blanket_val( clique.size() );
+		
+		for( unsigned int i = 0; i < clique.size(); i++ ) {
 			markov_blanket[i] = std::dynamic_pointer_cast <BlockVariable>( clique[i] );
-			if ( markov_blanket[i]->GetState() == BLOCK_FULL ) { blanket_val[i] = 1; }
-			else if ( markov_blanket[i]->GetState() == BLOCK_HALF ) { blanket_val[i] = .5; }
-			else { blanket_val[i] = 0; }
+
+			BlockType type = markov_blanket[i]->GetState();
+			switch( type ) {
+				case BLOCK_FULL:
+					blanket_val[i] = 1.0;
+					break;
+				case BLOCK_HALF:
+					blanket_val[i] = 0.5;
+					break;
+				case BLOCK_EMPTY:
+					blanket_val[i] = 0.0;
+					break;
+				default:
+					throw std::runtime_error("Invalid block type!");
+			}
+
 		}
 		
 		// GetClique returned pointers in the order: self, top, bottom, sides.
@@ -58,30 +75,27 @@ namespace intelligent {
 		double me = blanket_val[0];
 		double prob = 0;
 
-		// Old switch code
-// 		if ( me == 1 ) {
-// 			if (points >= 6)	   			    {prob = 1;}
-// 			else if (points < 6 && points >= 3) {prob = .75;}
-// 			else if (points < 3 ) 				{prob = 0;}
-// 		}
-// 		else if ( me == .5 ) {
-// 			if (points >= 6) 			   		{prob = 1;}
-// 			else if (points < 6 && points > 2.5) {prob = 0.75;}
-// 			else if (points <= 2.5 && points > 0) 	{prob = .5;}
-// 			else if (points == 0 ) 				{prob = 0;}
-// 		}
-// 		else { // me == 0
-// 			if (points >= 6) 			   {prob = 0.2;}
-// 			else if (points < 6 && points >= 3) {prob = 0.5;}
-// 			else if (points < 3 && points >= 0) {prob = 1;}
-// 		}
-
 		if( me == 0 ) {
-			return 0.1;
+// 			prob = std::exp( -3*points );
+			prob = 0.1;
 		}
-		
-		double econst = -1.0/me;
-		prob = 1 - std::exp( econst*points );
+		else if( me == 0.5 ) {
+			double econst = -1.0/me;
+			prob = 1 - std::exp( econst*points );
+		}
+		else if( me == 1.0 ) {
+
+			// FULL blocks must be supported from underneath
+			if( blanket_val[2] == 0 ) {
+				prob = 0;
+			}
+			else {
+				double econst = -1.0/me;
+				prob = 1 - std::exp( econst*points );
+			}
+		}
+
+// 		std::cout << "p: " << prob << " for type " << me << " and points " << points << std::endl;
 		return prob;
 	}
 				

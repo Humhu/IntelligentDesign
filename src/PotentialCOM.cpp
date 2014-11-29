@@ -57,7 +57,18 @@ namespace intelligent {
 // 		if( dx + dy + dz > 4 ) {
 // 			p = 0.01;
 // 		}
-		double p = std::exp( -(dx + dy + dz) );
+		double deviation = dx + dy + dz;
+		double p = 1.0;
+
+		// HACK Make a parameter or something
+		if( deviation > 2.0 ) {
+			//p = std::exp( -3*deviation );
+			p = 1E-6;
+		}
+		else {
+			p = std::exp( -deviation );
+		}
+
 // 		std::cout << "p: " << p << " for com: " << com.x << ", " << com.y << ", " << com.z << std::endl;
 		return p;
 	}
