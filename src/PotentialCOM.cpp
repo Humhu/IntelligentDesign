@@ -2,6 +2,7 @@
 #include "intelligent/BlockVariable.h"
 #include "intelligent/DiscretePoint.h"
 
+#include <iostream>
 #include <memory>
 #include <cmath>
 

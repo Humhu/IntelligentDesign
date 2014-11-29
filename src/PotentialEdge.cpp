@@ -1,6 +1,7 @@
 #include "intelligent/PotentialEdge.h"
 #include "intelligent/BlockVariable.h"
 #include <memory>
+#include <iostream>
 
 namespace intelligent {
 

@@ -14,6 +14,7 @@ set( IntelligentDesign_SOURCES
 	 PotentialFixed.cpp
 	 PotentialHeight.cpp
 	 PotentialMass.cpp
+	 PotentialRepel.cpp
 	 PotentialSupport.cpp
 	 RandomDistributions.cpp
 	 RendererManager.cpp )

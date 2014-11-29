@@ -11,6 +11,7 @@
 #include "intelligent/PotentialEdge.h"
 #include "intelligent/PotentialCOM.h"
 #include "intelligent/PotentialFixed.h"
+#include "intelligent/PotentialRepel.h"
 
 using namespace intelligent;
 
@@ -26,6 +27,12 @@ GibbsPotential::Ptr CreateSupportPotential( const GibbsField& field, const Latti
 GibbsPotential::Ptr CreateHeightPotential( const GibbsField& field, const Lattice& lattice,
 										   unsigned int id, const std::vector<unsigned int>& variableIDs ) {
 	return std::make_shared<PotentialHeight>( field, id, variableIDs, lattice );
+}
+
+GibbsPotential::Ptr CreateRepelPotential( const GibbsField& field, const Lattice& lattice,
+										  unsigned int id, const std::vector<unsigned int>& variableIDs, 
+										  const ContinuousPoint3 objPos ) {
+	return std::make_shared<PotentialRepel>( field, id, variableIDs, lattice, objPos );
 }
 
 GibbsPotential::Ptr CreateEdgePotential( const GibbsField& field, const Lattice& lattice,
@@ -108,8 +115,22 @@ int main() {
 	AssemblySlot::Ptr edgeSlot =
 		std::make_shared<AssemblySlot>( edgePoints, edgeConstructor );
 
-	aconst.AddSlot( edgeSlot );
+//	aconst.AddSlot( edgeSlot );
 
+	
+	// Add a repel slot
+	// Unary slot only needs self
+	ContinuousPoint3 objPos( 2, 2, 4 );
+	std::vector<DiscretePoint3> repelPoints;
+	repelPoints.emplace_back( 0, 0, 0 );
+	AssemblySlot::PotentialConstructor repelConstructor =
+		boost::bind( &CreateRepelPotential, _1, _2, _3, _4, objPos);
+	AssemblySlot::Ptr repelSlot =
+		std::make_shared<AssemblySlot>( repelPoints, repelConstructor );
+
+//	aconst.AddSlot( repelSlot );
+
+	
 	// Lattice range
 	int xDim = 4;
 	int yDim = 4;
@@ -139,7 +160,7 @@ int main() {
 		boost::bind( &CreateCOMPotential, _1, _2, _3, _4, desiredCOM );
 	AssemblySlot::Ptr comSlot =
 		std::make_shared<AssemblySlot>( allPoints, comConstructor );
-//
+
 // 	aconst.AddSlot( comSlot );
 
 	// Make the global mass potential
@@ -148,7 +169,7 @@ int main() {
 	AssemblySlot::Ptr massSlot =
 		std::make_shared<AssemblySlot>( allPoints, massConstructor );
 
-	aconst.AddSlot( massSlot );
+//	aconst.AddSlot( massSlot );
 	
 	DiscreteBox3::Operator addOp =
 		boost::bind( &AssemblyConstructor::AddVoxel, &aconst,
