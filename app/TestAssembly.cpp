@@ -93,7 +93,7 @@ int main() {
 	AssemblySlot::Ptr supportSlot =
 		std::make_shared<AssemblySlot>( supportPoints, supportConstructor );
 
- 	aconst.AddSlot( supportSlot );
+//  	aconst.AddSlot( supportSlot );
 
 	// Add the height potential slot
 	// Unary slot only needs self
@@ -128,12 +128,12 @@ int main() {
 	AssemblySlot::Ptr repelSlot =
 		std::make_shared<AssemblySlot>( repelPoints, repelConstructor );
 
-//	aconst.AddSlot( repelSlot );
+	aconst.AddSlot( repelSlot );
 
 	
 	// Lattice range
-	int xDim = 4;
-	int yDim = 4;
+	int xDim = 7;
+	int yDim = 7;
 	int zDim = 7;
 	
 	std::vector<DiscretePoint3> corners;
@@ -209,7 +209,7 @@ int main() {
 	MCMCSampler sampler;
 	sampler.SetIndexSet( interiorIDs );
 	
-	unsigned int sampleSize = 1;
+	unsigned int sampleSize = 10;
 	while(true) {
 		sampler.Sample( assembly.GetField(), sampleSize );
  		aviz.Visualize( assembly );
