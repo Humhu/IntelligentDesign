@@ -17,6 +17,7 @@ namespace intelligent {
 	}
 	
 	DiscreteAssembly::Ptr TreeSearch::Next() {
+		if (pq.empty()) { return DiscreteAssembly::Ptr(); }
 		DiscreteAssembly::Ptr da = pq.top().second;
 		pq.pop();
 		auto das = GetSuccessors(*da);
@@ -25,6 +26,7 @@ namespace intelligent {
 	}
 	
 	DiscreteAssembly::Ptr TreeSearch::Peek() {
+		if (pq.empty()) { return DiscreteAssembly::Ptr(); }
 		return pq.top().second;
 	}
 	
