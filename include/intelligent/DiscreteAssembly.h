@@ -22,6 +22,7 @@ namespace intelligent {
 
 		BlockVariable::Ptr GetBlock( unsigned int id ) const;
 		
+		typedef std::shared_ptr<DiscreteAssembly> Ptr; 
 	private:
 
 		GibbsField field;

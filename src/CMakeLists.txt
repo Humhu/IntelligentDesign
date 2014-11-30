@@ -17,7 +17,8 @@ set( IntelligentDesign_SOURCES
 	 PotentialRepel.cpp
 	 PotentialSupport.cpp
 	 RandomDistributions.cpp
-	 RendererManager.cpp )
+	 RendererManager.cpp
+	 TreeSearch.cpp )
 
 add_library( intelligent SHARED ${IntelligentDesign_SOURCES} )
 
