@@ -3,6 +3,7 @@
 #include "intelligent/RendererManager.h"
 #include "intelligent/DiscreteAssembly.h"
 #include "intelligent/MCMCSampler.h"
+#include "intelligent/AssemblySampler.h"
 
 // Potentials
 #include "intelligent/PotentialSupport.h"
@@ -73,9 +74,9 @@ void AddInteriorPoint( std::vector<unsigned int>& inds, const Lattice& lattice,
 int main() {
 
 	// Create the assembly and constructor
-	DiscreteAssembly assembly;
+	DiscreteAssembly::Ptr assembly = std::make_shared<DiscreteAssembly>();
 	AssemblyConstructor::VariableConstructor vconst =
-	boost::bind( &CreateBlock, _1, _2 );
+		boost::bind( &CreateBlock, _1, _2 );
 	AssemblyConstructor aconst( vconst );
 
 	// Add the support potential slot
@@ -173,27 +174,27 @@ int main() {
 	
 	DiscreteBox3::Operator addOp =
 		boost::bind( &AssemblyConstructor::AddVoxel, &aconst,
-					 boost::ref(assembly), _1 );
+					 boost::ref(*assembly), _1 );
 	box.Iterate( addOp );
 	
 	// Once voxels are added, add potentials
-	aconst.BuildPotentials( assembly );
+	aconst.BuildPotentials( *assembly );
 
 	// Add a fix potential for the seed block manually
-	unsigned int seedID = assembly.GetLattice().GetNodeID( DiscretePoint3( 1, 1, 0 ) );
-	GibbsVariable::Ptr seedVar = assembly.GetField().GetVariable( seedID );
+	unsigned int seedID = assembly->GetLattice().GetNodeID( DiscretePoint3( 1, 1, 0 ) );
+	GibbsVariable::Ptr seedVar = assembly->GetField().GetVariable( seedID );
 	std::vector<unsigned int> seedClique;
 	seedClique.push_back( seedID );
 	PotentialFixed::Ptr fixPot =
-		std::make_shared<PotentialFixed>( assembly.GetField(),
-										  assembly.GetField().NumPotentials(),
+		std::make_shared<PotentialFixed>( assembly->GetField(),
+										  assembly->GetField().NumPotentials(),
 										  seedClique, BLOCK_FULL );
 	
 	seedVar->AddPotential( fixPot->id );
-	assembly.GetField().AddPotential( fixPot );
+	assembly->GetField().AddPotential( fixPot );
 	std::dynamic_pointer_cast<BlockVariable>( seedVar )->SetState( BLOCK_FULL );
 	
-	std::cout << "Created " << assembly.GetField().NumPotentials() << " potentials." << std::endl;
+	std::cout << "Created " << assembly->GetField().NumPotentials() << " potentials." << std::endl;
 
 	// Visualize the assembly
 	RendererManager rman( "Output", 600, 600 );
@@ -203,16 +204,21 @@ int main() {
 	std::vector<unsigned int> interiorIDs;
 	DiscreteBox3::Operator intOp =
 		boost::bind( &AddInteriorPoint, boost::ref(interiorIDs),
-					 boost::ref(assembly.GetLattice()), _1 );
+					 boost::ref(assembly->GetLattice()), _1 );
 	box.Iterate( intOp );
 
-	MCMCSampler sampler;
-	sampler.SetIndexSet( interiorIDs );
+	MCMCSampler mcmcSampler;
+	mcmcSampler.SetIndexSet( interiorIDs );
+	AssemblySampler aSampler( mcmcSampler );
+	aSampler.SetBase( assembly );
 	
-	unsigned int sampleSize = 10;
+	unsigned int sampleDepth = 1;
 	while(true) {
-		sampler.Sample( assembly.GetField(), sampleSize );
- 		aviz.Visualize( assembly );
+// 		sampler.Sample( assembly.GetField(), sampleSize );
+		std::vector<DiscreteAssembly::Ptr> samples = aSampler.Sample( 1, sampleDepth );
+		assembly = samples[0];
+		aSampler.SetBase( assembly );
+ 		aviz.Visualize( *assembly );
 		usleep( 1E5 );
 	}
 	

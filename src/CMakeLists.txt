@@ -2,6 +2,7 @@
 
 set( IntelligentDesign_SOURCES
 	 AssemblyConstructor.cpp
+	 AssemblySampler.cpp
 	 AssemblyVisualizer.cpp
 	 BlockVariable.cpp
 	 DiscreteAssembly.cpp

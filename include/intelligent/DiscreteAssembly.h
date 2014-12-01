@@ -5,12 +5,17 @@
 #include "intelligent/Lattice.h"
 #include "intelligent/BlockVariable.h"
 
+#include <memory>
+
 namespace intelligent {
 
 	class DiscreteAssembly {
 	public:
 
+		typedef std::shared_ptr<DiscreteAssembly> Ptr;
+		
 		DiscreteAssembly();
+		DiscreteAssembly( const DiscreteAssembly& other );
 
 		// TODO Figure out how to do sampling so we can return const references
 		// here instead
@@ -22,7 +27,6 @@ namespace intelligent {
 
 		BlockVariable::Ptr GetBlock( unsigned int id ) const;
 		
-		typedef std::shared_ptr<DiscreteAssembly> Ptr; 
 	private:
 
 		GibbsField field;

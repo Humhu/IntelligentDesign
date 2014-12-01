@@ -2,6 +2,7 @@
 #include "intelligent/RandomDistributions.h"
 
 #include <sstream>
+#include <iostream>
 
 namespace intelligent {
 
@@ -9,7 +10,9 @@ namespace intelligent {
 		state = BLOCK_EMPTY;
 	}  
   
-	BlockVariable::BlockVariable( const GibbsField& _field, const BlockVariable& other ) : GibbsVariable( _field, other ) {
+	BlockVariable::BlockVariable( const GibbsField& _field, const BlockVariable& other ) :
+		GibbsVariable( _field, other ) {
+			
 		state = other.state;
 	}
 

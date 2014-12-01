@@ -4,6 +4,10 @@ namespace intelligent {
 
 	DiscreteAssembly::DiscreteAssembly() {}
 
+	DiscreteAssembly::DiscreteAssembly( const DiscreteAssembly& other ) :
+		field( other.field ),
+		lattice( other.lattice ) {}
+
 	GibbsField& DiscreteAssembly::GetField() {
 		return field;
 	}

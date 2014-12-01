@@ -7,6 +7,7 @@
 
 namespace intelligent {
 
+	/*! \brief A simple Monte Carlo Markov Chain sampler for the Gibbs Field class. */
 	class MCMCSampler {
 	public:
 
