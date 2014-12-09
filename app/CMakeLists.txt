@@ -4,3 +4,6 @@ target_link_libraries( TestCone intelligent ${IntelligentDesign_LIBRARIES} )
 
 add_executable( TestAssembly TestAssembly.cpp )
 target_link_libraries( TestAssembly intelligent ${IntelligentDesign_LIBRARIES} )
+
+add_executable( TestTreeSearch TestTreeSearch.cpp )
+target_link_libraries( TestTreeSearch intelligent ${IntelligentDesign_LIBRARIES} )
