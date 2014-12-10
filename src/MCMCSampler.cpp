@@ -16,6 +16,7 @@ namespace intelligent {
 	}
 
 	void MCMCSampler::SetIndexSet( const std::vector<unsigned int>& ind ) {
+// 		std::cout << "SetIndexSet has been called" << std::endl;
 		hasIndices = true;
 		indices = ind;
 	}
@@ -30,6 +31,7 @@ namespace intelligent {
 		std::uniform_real_distribution<> rid( 0, 1 );
 		
 		if( !hasIndices ) {
+// 			std::cout << "sampling withOUT indices" << std::endl;			
 			std::uniform_int_distribution<> uid( 0, variables.size()-1 );
 			for( unsigned int i = 0 ; i < numSamples; i++ ) {
 				
@@ -40,6 +42,9 @@ namespace intelligent {
 			}
 		}
 		else {
+			std::cout << "sampling WITH indices" << std::endl;
+			std::cout << "Indices.size " << indices.size() << std::endl;
+
 			std::uniform_int_distribution<> uid( 0, indices.size()-1 );
 			for( unsigned int i = 0 ; i < numSamples; i++ ) {
 				
@@ -47,6 +52,8 @@ namespace intelligent {
 // 				std::cout << "Sampling index " << index << std::endl;
 				assert(variables[index] != nullptr);
 				variables[ index ]->Sample( rid(generator) );
+				
+// 				std::cout << variables[ index ]->id << std::endl;
 			}
 		}
 

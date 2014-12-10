@@ -111,7 +111,8 @@ namespace intelligent {
 		std::vector<GibbsVariable::Ptr> vars( variables.size() );
 		unsigned int idx = 0;
 		BOOST_FOREACH( const VariableMap::value_type& item, variables ) {
-			vars[idx] = item.second;
+// 			vars[idx] = item.second;
+			vars[ item.second->id ] = item.second;
 			idx++;
 		}
 		return vars;

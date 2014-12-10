@@ -24,11 +24,13 @@ namespace intelligent {
 		 * multiple samples is faster than calling it multiple times in sequence. */
 		void Sample( GibbsField& field, unsigned int numSamples = 1 );
 
+		bool hasIndices;
+
 	private:
 		
 		std::random_device rd;
 		std::mt19937 generator;
-		bool hasIndices;
+		// bool hasIndices;
 		std::vector<unsigned int> indices;
 		
 	};

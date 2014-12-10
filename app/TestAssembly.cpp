@@ -69,6 +69,7 @@ void AddInteriorPoint( std::vector<unsigned int>& inds, const Lattice& lattice,
 		|| p.z == bounds.maxZ ) {
 		return;
 	}
+	std::cout << p << std::endl;
 	inds.push_back( lattice.GetNodeID( p ) );
 }
 
@@ -133,9 +134,9 @@ int main() {
 
 	
 	// Lattice range
-	int xDim = 30;
+	int xDim = 5;
 	int yDim = 2;
-	int zDim = 30;
+	int zDim = 5;
 	
 	std::vector<DiscretePoint3> corners;
 	corners.emplace_back( 0, 0, 0 );
@@ -190,6 +191,8 @@ int main() {
 					 boost::ref(assembly->GetLattice()), _1 );
 	box.Iterate( intOp );
 
+	std::cout << interiorIDs.size() << std::endl;
+	
 	MCMCSampler mcmcSampler;
 	mcmcSampler.SetIndexSet( interiorIDs );
 	AssemblySampler aSampler( mcmcSampler );
