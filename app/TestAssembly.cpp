@@ -134,9 +134,9 @@ int main() {
 
 	
 	// Lattice range
-	int xDim = 5;
+	int xDim = 30;
 	int yDim = 2;
-	int zDim = 5;
+	int zDim = 30;
 	
 	std::vector<DiscretePoint3> corners;
 	corners.emplace_back( 0, 0, 0 );

@@ -48,8 +48,11 @@ namespace intelligent {
 	}
 	
 	DiscreteAssembly::Ptr TreeSearch::Next() {
-		if (pq.empty()) { return DiscreteAssembly::Ptr(); }
-		DiscreteAssembly::Ptr da = pq.popMax().assembly;
+		
+		if (pq.empty()) { return DiscreteAssembly::Ptr(); }		
+		SearchEntry myvar = pq.findMax();
+		std::cout << "priority " << myvar.priority << std::endl;
+		DiscreteAssembly::Ptr da = myvar.assembly;
 		auto das = GetSuccessors( da );
 		Add(das);
 		return da;
@@ -92,6 +95,7 @@ namespace intelligent {
 		DiscretePoint3 blockPosition;
 		double cx = 0.0, cy = 0.0, cz = 0.0;
 		double totalMass = 0.0;
+		double someZ = 0;
 		for (const auto & v : vars) {
 			double mass = 0.0;
 			blockVariable = std::dynamic_pointer_cast<BlockVariable>(v);
@@ -109,6 +113,10 @@ namespace intelligent {
 			bx += std::abs(desiredCOM.x - blockPosition.x);
 			by += std::abs(desiredCOM.y - blockPosition.y);
 			bz += std::abs(desiredCOM.z - blockPosition.z);
+			
+			if (mass != 0) {
+			someZ += blockPosition.z;
+			}
 		}
 		ContinuousPoint3 com;
 		com.x = cx/totalMass;
@@ -119,9 +127,17 @@ namespace intelligent {
 		dy = std::abs(com.y - desiredCOM.y);
 		dz = std::abs(com.z - desiredCOM.z);
 
-		double cost = std::sqrt(dx*dx + dy*dy + dz*dz);
-		cost += std::sqrt(bx*bx + by*by + bz*bz);
-		cost += totalMass;
+		double cost_diffCOM = std::sqrt(dx*dx + dy*dy + dz*dz);
+		double cost_totalMass = totalMass;
+		double cost_Z = -1*someZ;
+// 		cost += std::sqrt(bx*bx + by*by + bz*bz);
+// 		cost += totalMass;
+		double cost = cost_diffCOM + cost_totalMass + cost_Z;
+		
+		std::cout << "cost_diffCOM = " << cost_diffCOM << std::endl;
+		std::cout << "cost_totalMass = " << cost_totalMass << std::endl;
+		std::cout << "cost_Z = " << cost_Z << std::endl;
+
 		return  cost;
 	}
 }
