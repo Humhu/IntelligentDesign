@@ -4,6 +4,7 @@
 #include "intelligent/DiscreteAssembly.h"
 #include "intelligent/MCMCSampler.h"
 #include "intelligent/AssemblySampler.h"
+#include "intelligent/TreeSearch.h"
 
 // Potentials
 #include "intelligent/PotentialSupport.h"
@@ -94,7 +95,7 @@ int main() {
 	AssemblySlot::Ptr supportSlot =
 		std::make_shared<AssemblySlot>( supportPoints, supportConstructor );
 
-//  	aconst.AddSlot( supportSlot );
+ 	aconst.AddSlot( supportSlot );
 
 	// Add the height potential slot
 	// Unary slot only needs self
@@ -116,9 +117,8 @@ int main() {
 	AssemblySlot::Ptr edgeSlot =
 		std::make_shared<AssemblySlot>( edgePoints, edgeConstructor );
 
-//	aconst.AddSlot( edgeSlot );
+// 	aconst.AddSlot( edgeSlot );
 
-	
 	// Add a repel slot
 	// Unary slot only needs self
 	ContinuousPoint3 objPos( 2, 2, 4 );
@@ -129,13 +129,13 @@ int main() {
 	AssemblySlot::Ptr repelSlot =
 		std::make_shared<AssemblySlot>( repelPoints, repelConstructor );
 
-	aconst.AddSlot( repelSlot );
+// 	aconst.AddSlot( repelSlot );
 
 	
 	// Lattice range
-	int xDim = 7;
-	int yDim = 7;
-	int zDim = 7;
+	int xDim = 30;
+	int yDim = 2;
+	int zDim = 30;
 	
 	std::vector<DiscretePoint3> corners;
 	corners.emplace_back( 0, 0, 0 );
@@ -154,23 +154,6 @@ int main() {
 	DiscreteBox3::Operator pushOp =
 		boost::bind( &AddCOMPoint, boost::ref(allPoints), _1 );
 	box.Iterate( pushOp );
-
-	// Make the global COM potential
-	ContinuousPoint3 desiredCOM( 1, 1, 2 );
-	AssemblySlot::PotentialConstructor comConstructor =
-		boost::bind( &CreateCOMPotential, _1, _2, _3, _4, desiredCOM );
-	AssemblySlot::Ptr comSlot =
-		std::make_shared<AssemblySlot>( allPoints, comConstructor );
-
-// 	aconst.AddSlot( comSlot );
-
-	// Make the global mass potential
-	AssemblySlot::PotentialConstructor massConstructor =
-		boost::bind( &CreateMassPotential, _1, _2, _3, _4, -0.1, 25.0 );
-	AssemblySlot::Ptr massSlot =
-		std::make_shared<AssemblySlot>( allPoints, massConstructor );
-
-//	aconst.AddSlot( massSlot );
 	
 	DiscreteBox3::Operator addOp =
 		boost::bind( &AssemblyConstructor::AddVoxel, &aconst,
@@ -212,14 +195,47 @@ int main() {
 	AssemblySampler aSampler( mcmcSampler );
 	aSampler.SetBase( assembly );
 	
-	unsigned int sampleDepth = 1;
-	while(true) {
-// 		sampler.Sample( assembly.GetField(), sampleSize );
-		std::vector<DiscreteAssembly::Ptr> samples = aSampler.Sample( 1, sampleDepth );
-		assembly = samples[0];
-		aSampler.SetBase( assembly );
- 		aviz.Visualize( *assembly );
+	unsigned int sampleDepth = 10;
+	unsigned int sampleCounter = 0;
+
+	aviz.Visualize( *assembly );
+
+	TreeSearch tsearch( aSampler );
+	
+// 	while(true) {
+// 		std::vector<DiscreteAssembly::Ptr> samples = aSampler.Sample( 1, sampleDepth );
+// 		assembly = samples[0];
+// 		aSampler.SetBase( assembly );
+// 
+// 		sampleCounter++;
+// 		std::cout << "Generated " << sampleCounter << " samples" << std::endl;
+// 
+// 		if( sampleCounter % 100 == 0 ) {
+// 			aviz.Visualize( *assembly );
+// 			rman.RequestScreenshot();
+// 		}
+// 		
+// 		usleep( 1E5 );
+// 	}
+
+	tsearch.SetNumSuccessors( 5 );
+	tsearch.SetSampleDepth( 10 );
+	tsearch.Add( assembly );
+
+	
+	while( true ) {
+
+		DiscreteAssembly::Ptr best = tsearch.Next();
+
+		sampleCounter++;
+		std::cout << "# successors: " << tsearch.Size() << std::endl;
+		std::cout << "Generated " << sampleCounter << " successors" << std::endl;
+		if( sampleCounter % 10 == 0 ) {
+			aviz.Visualize( *best );
+		}
+
 		usleep( 1E5 );
+		
 	}
 	
 	pause();

@@ -64,6 +64,10 @@ namespace intelligent {
 	struct ClearRequest : public RenderRequest {
 		bool clearAll;
 	};
+
+	struct ScreenshotRequest : public RenderRequest {
+		bool screenshot;
+	};
 	
 	struct CubeRenderRequest : public RenderRequest {
 		double center[3];
@@ -97,7 +101,7 @@ namespace intelligent {
 
 	typedef boost::variant < CubeRenderRequest, LineRenderRequest,
 							 PlaneRenderRequest, ArrowRenderRequest,
-							 ClearRequest >
+							 ClearRequest, ScreenshotRequest >
 			RenderRequestVariant;
 
 
@@ -113,6 +117,7 @@ namespace intelligent {
 		void operator()( const PlaneRenderRequest& request );
 		void operator()( const ArrowRenderRequest& request );
 		void operator()( const ClearRequest& request );
+		void operator()( const ScreenshotRequest& request );
 		
 	private:
 
@@ -167,9 +172,12 @@ namespace intelligent {
 						 unsigned int xSize, unsigned int ySize );
 
 		void Clear();
+		void RequestScreenshot();
+		
 		void QueueRenderRequest( RenderRequestVariant& request );
 		void QueueRenderRequests( const std::vector<RenderRequestVariant>& requests );
-
+		void ClearRenderRequests();
+		
 		void SetScreenshotPrefix( const std::string& _prefix );
 		void SetScreenshotMagnification( unsigned int mag );
 		

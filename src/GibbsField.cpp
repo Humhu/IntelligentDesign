@@ -36,7 +36,8 @@ namespace intelligent {
 
 	GibbsVariable::GibbsVariable( const GibbsField& _field, const GibbsVariable& other ) :
 		field( _field ),
-		id( other.id ) {}
+		id( other.id ),
+		potentialIDs( other.potentialIDs ) {}
 
 	double GibbsVariable::CalculatePotential() {
 

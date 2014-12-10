@@ -31,6 +31,8 @@ namespace intelligent {
 
 		/*! \brief Retrieve the assembly in the queue with the highest reward. */
 		DiscreteAssembly::Ptr Peek();
+
+		size_t Size();
 		
 	private:
 

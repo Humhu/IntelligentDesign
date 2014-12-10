@@ -225,6 +225,10 @@ namespace intelligent {
 		// TODO Check clearAll flag instead of always clearing all
 	}
 
+	void RenderRequestVisitor::operator()( const ScreenshotRequest& request ) {
+		manager.CaptureScreenshot();
+	}
+
 	void RenderRequestVisitor::SetActorProperties( vtkSmartPointer<vtkActor>& actor,
 												   const RenderRequest& request ) {
 
@@ -363,6 +367,11 @@ namespace intelligent {
 		}
 	}
 
+	void RendererManager::ClearRenderRequests() {
+		boost::unique_lock<boost::mutex> lock( queueMutex );
+		requestQueue.clear();
+	}
+
 	void RendererManager::ProcessRequestQueue() {
 
 		boost::unique_lock<boost::mutex> lock( queueMutex );
@@ -382,6 +391,12 @@ namespace intelligent {
 
 	void RendererManager::Clear() {
 		ClearRequest request;
+		RenderRequestVariant vreq = request;
+		QueueRenderRequest( vreq );
+	}
+
+	void RendererManager::RequestScreenshot() {
+		ScreenshotRequest request;
 		RenderRequestVariant vreq = request;
 		QueueRenderRequest( vreq );
 	}

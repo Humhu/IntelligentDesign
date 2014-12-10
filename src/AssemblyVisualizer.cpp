@@ -40,7 +40,8 @@ namespace intelligent {
 		areq.id = requestCounter++;
 		RenderRequestVariant areqv = areq;
 		requests.push_back( areqv );
-		
+
+		renderer.ClearRenderRequests();
 		renderer.QueueRenderRequests( requests );
 	}
 

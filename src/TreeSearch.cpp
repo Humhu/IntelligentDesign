@@ -47,6 +47,10 @@ namespace intelligent {
 		sampler.SetBase( _da );
 		return sampler.Sample( numSuccessors, sampleDepth );
 	}
+
+	size_t TreeSearch::Size() {
+		return pq.size();
+	}
 	
 	double TreeSearch::ComputeCost(const DiscreteAssembly & _da) {
 		// TODO: Compute cost of an assembly

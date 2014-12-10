@@ -56,7 +56,11 @@ namespace intelligent {
 		// we just go through assuming there are 6 neighbors and that they are in the
 		// believed order.
 		double points = 0;
-			
+		bool hasFullNeighbor = false;
+		for( int i = 1; i < 7; i++ ) {
+			hasFullNeighbor = hasFullNeighbor || blanket_val[i] == 1.0;
+		}
+		
 		// if I have a block above me, I get 1*state-of-above-block points
 		points = points + 3*blanket_val[1];
 		
@@ -77,7 +81,7 @@ namespace intelligent {
 
 		if( me == 0 ) {
 // 			prob = std::exp( -3*points );
-			prob = 0.1;
+			prob = 0.5;
 		}
 		else if( me == 0.5 ) {
 			double econst = -1.0/me;
@@ -85,8 +89,12 @@ namespace intelligent {
 		}
 		else if( me == 1.0 ) {
 
+			// FUll blocks must be touching another full block
+			if( !hasFullNeighbor ) {
+				prob = 0;
+			}
 			// FULL blocks must be supported from underneath
-			if( blanket_val[2] == 0 ) {
+			else if( blanket_val[2] == 0 ) {
 				prob = 0;
 			}
 			else {

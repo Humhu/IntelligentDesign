@@ -217,6 +217,9 @@ int main() {
 	while(true) {		
 		assembly = tSearch.Next();
  		aviz.Visualize( *assembly );
+
+		std::cout << "# successors: " << tSearch.Size() << std::endl;
+		
 		usleep( 1E5 );
 	}
 	
