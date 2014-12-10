@@ -19,7 +19,7 @@ namespace intelligent {
 	
 	void TreeSearch::Add(DiscreteAssembly::Ptr _da) {
 		double cost = ComputeCost(*_da);
-		pq.emplace(cost, _da);
+		pq.emplace(-cost, _da);
 	}
 	
 	void TreeSearch::Add(const std::vector<DiscreteAssembly::Ptr> & _das) {
@@ -53,7 +53,6 @@ namespace intelligent {
 	}
 	
 	double TreeSearch::ComputeCost(const DiscreteAssembly & _da) {
-		// TODO: Compute cost of an assembly
 		const auto & lattice = _da.GetLattice();
 		const std::vector<unsigned> & nodeIds = lattice.GetNodeIDs();
 		const auto & bbox = lattice.GetBoundingBox();
@@ -61,6 +60,16 @@ namespace intelligent {
 		for (const auto & nid : nodeIds) {
 			vars.push_back(_da.GetField().GetVariable(nid));
 		}
+		
+		double dx = bbox.maxX - bbox.minX + 1;
+		double dy = bbox.maxY - bbox.minY + 1;
+		double dz = bbox.maxZ - bbox.minZ + 1;
+		ContinuousPoint3 desiredCOM;
+		desiredCOM.x = bbox.minX + dx/2;
+		desiredCOM.y = bbox.minY + dy/2;
+		desiredCOM.z = bbox.minZ;
+
+		double bx = 0, by = 0, bz = 0;
 		BlockVariable::Ptr blockVariable;
 		DiscretePoint3 blockPosition;
 		double cx = 0.0, cy = 0.0, cz = 0.0;
@@ -79,24 +88,22 @@ namespace intelligent {
 			cx += mass * blockPosition.x;
 			cy += mass * blockPosition.y;
 			cz += mass * blockPosition.z;
+			bx += std::abs(desiredCOM.x - blockPosition.x);
+			by += std::abs(desiredCOM.y - blockPosition.y);
+			bz += std::abs(desiredCOM.z - blockPosition.z);
 		}
 		ContinuousPoint3 com;
 		com.x = cx/totalMass;
 		com.y = cy/totalMass;
 		com.z = cz/totalMass;
 		
-		double dx = bbox.maxX - bbox.minX + 1;
-		double dy = bbox.maxY - bbox.minY + 1;
-		double dz = bbox.maxZ - bbox.minZ + 1;
-		ContinuousPoint3 desiredCOM;
-		desiredCOM.x = bbox.minX + dx/2;
-		desiredCOM.y = bbox.minY + dy/2;
-		desiredCOM.z = bbox.minZ;
-		
 		dx = std::abs(com.x - desiredCOM.x);
 		dy = std::abs(com.y - desiredCOM.y);
 		dz = std::abs(com.z - desiredCOM.z);
 
-		return dx + dy + dz;
+		double cost = std::sqrt(dx*dx + dy*dy + dz*dz);
+		cost += std::sqrt(bx*bx + by*by + bz*bz);
+		cost += totalMass;
+		return  cost;
 	}
 }
