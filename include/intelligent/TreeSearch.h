@@ -6,8 +6,18 @@
 #include "intelligent/DiscreteAssembly.h"
 #include "intelligent/AssemblySampler.h"
 
-namespace intelligent {
+#include "intelligent/MinMaxHeap.hpp"
 
+namespace intelligent {
+	struct SearchEntry {
+		double priority;
+		DiscreteAssembly::Ptr assembly;
+	};
+bool operator<( const intelligent::SearchEntry& lhs,
+				const intelligent::SearchEntry& rhs );
+
+	
+	
 	/*! \brief Class to perform tree search over discrete assemblies. */
 	class TreeSearch {
 	public:
@@ -20,6 +30,9 @@ namespace intelligent {
 		/*! \brief Specify the number of times to run MCMC when generating successors. */
 		void SetSampleDepth( unsigned int d );
 
+		/*! \brief Specify maximum number of successors to keep in the queue. */
+		void SetMaxQueueSize( unsigned int q );
+		
 		/*! \brief Add a discrete assembly to the search queue. */
 		void Add(DiscreteAssembly::Ptr _da);
 
@@ -35,10 +48,11 @@ namespace intelligent {
 		size_t Size();
 		
 	private:
-
+		
 		AssemblySampler& sampler;
 		unsigned int numSuccessors;
 		unsigned int sampleDepth;
+		unsigned int maxQueueSize;
 		
 		/*! \brief Generates samples for the specified assembly. */
 		std::vector<DiscreteAssembly::Ptr> 
@@ -47,7 +61,8 @@ namespace intelligent {
 		/*! \brief Compute the cost/reward for an assembly. */
 		double ComputeCost(const DiscreteAssembly & _da);
 		
-		std::priority_queue<std::pair<double,DiscreteAssembly::Ptr>> pq;
+// 		std::priority_queue<std::pair<double,DiscreteAssembly::Ptr>> pq;
+		MinMaxHeap<SearchEntry> pq;
 		
 		// FIXME: Need to keep track of previously seen assemblies?
 	};

@@ -4,10 +4,16 @@
 
 namespace intelligent {
 
+	bool operator<( const intelligent::SearchEntry& lhs,
+					const intelligent::SearchEntry& rhs ) {
+		return lhs.priority < rhs.priority;
+	}
+	
 	TreeSearch::TreeSearch( AssemblySampler& _sampler ) :
 		sampler( _sampler ),
 		numSuccessors( 5 ),
-		sampleDepth( 10 ) {}
+		sampleDepth( 10 ),
+		maxQueueSize( 400 ) {}
 
 	void TreeSearch::SetNumSuccessors( unsigned int n ) {
 		numSuccessors = n;
@@ -16,10 +22,23 @@ namespace intelligent {
 	void TreeSearch::SetSampleDepth( unsigned int d ) {
 		sampleDepth = d;
 	}
+
+	void TreeSearch::SetMaxQueueSize( unsigned int q ) {
+		maxQueueSize = q;
+	}
 	
 	void TreeSearch::Add(DiscreteAssembly::Ptr _da) {
 		double cost = ComputeCost(*_da);
-		pq.emplace(-cost, _da);
+		SearchEntry entry;
+		entry.priority = -cost;
+		entry.assembly = _da;
+		pq.push( entry );
+
+		if( pq.size() > maxQueueSize ) {
+			pq.popMin();
+		}
+		
+// 		pq.emplace(-cost, _da);
 	}
 	
 	void TreeSearch::Add(const std::vector<DiscreteAssembly::Ptr> & _das) {
@@ -30,8 +49,7 @@ namespace intelligent {
 	
 	DiscreteAssembly::Ptr TreeSearch::Next() {
 		if (pq.empty()) { return DiscreteAssembly::Ptr(); }
-		DiscreteAssembly::Ptr da = pq.top().second;
-		pq.pop();
+		DiscreteAssembly::Ptr da = pq.popMax().assembly;
 		auto das = GetSuccessors( da );
 		Add(das);
 		return da;
@@ -39,7 +57,7 @@ namespace intelligent {
 	
 	DiscreteAssembly::Ptr TreeSearch::Peek() {
 		if (pq.empty()) { return DiscreteAssembly::Ptr(); }
-		return pq.top().second;
+		return pq.findMax().assembly;
 	}
 	
 	std::vector<DiscreteAssembly::Ptr> 

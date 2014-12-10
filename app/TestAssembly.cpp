@@ -219,9 +219,9 @@ int main() {
 // 	}
 
 	tsearch.SetNumSuccessors( 5 );
-	tsearch.SetSampleDepth( 10 );
+	tsearch.SetSampleDepth( 50 );
 	tsearch.Add( assembly );
-
+	tsearch.SetMaxQueueSize( 1000 );
 	
 	while( true ) {
 
