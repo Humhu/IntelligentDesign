@@ -118,6 +118,8 @@ namespace intelligent {
 		GibbsPotential::Ptr GetPotential( unsigned int id ) const;
 		std::vector<GibbsPotential::Ptr> GetPotentials() const;
 		std::size_t NumPotentials() const;
+
+		double CalculateLogPotential();
 		
 	private:
 

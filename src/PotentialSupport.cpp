@@ -57,6 +57,11 @@ namespace intelligent {
 		// believed order.
 		double points = 0;
 		bool hasFullNeighbor = false;
+		
+		bool leftRightSupport = blanket_val[3] == 1.0 && blanket_val[5] == 1.0;
+		bool frontBackSupport = blanket_val[4] == 1.0 && blanket_val[6] == 1.0;
+		bool supportedUnderneath = blanket_val[2] == 1.0;
+		
 		for( int i = 1; i < 7; i++ ) {
 			hasFullNeighbor = hasFullNeighbor || blanket_val[i] == 1.0;
 		}
@@ -89,12 +94,10 @@ namespace intelligent {
 		}
 		else if( me == 1.0 ) {
 
-			// FUll blocks must be touching another full block
-			if( !hasFullNeighbor ) {
-				prob = 0;
-			}
-			// FULL blocks must be supported from underneath
-			else if( blanket_val[2] == 0 ) {
+// 			if( !hasFullNeighbor ) {
+// 				prob = 0;
+// 			}
+			if( blanket_val[2] == 0 ) {
 				prob = 0;
 			}
 			else {

@@ -15,6 +15,8 @@
 #include "intelligent/PotentialFixed.h"
 #include "intelligent/PotentialRepel.h"
 
+#include <fstream>
+
 using namespace intelligent;
 
 GibbsVariable::Ptr CreateBlock( const GibbsField& field, unsigned int id ) {
@@ -69,12 +71,35 @@ void AddInteriorPoint( std::vector<unsigned int>& inds, const Lattice& lattice,
 		|| p.z == bounds.maxZ ) {
 		return;
 	}
-	std::cout << p << std::endl;
 	inds.push_back( lattice.GetNodeID( p ) );
 }
 
-int main() {
+int main( int argc, char* argv[] ) {
 
+	std::string logPath;
+	bool enableLogging = false;
+	bool enableScreenshots = false;
+	std::string screenPrefix;
+	std::ofstream log;
+	
+	if( argc > 1 ) {
+		enableLogging = true;
+		logPath.assign( argv[1] );
+		std::cout << "Logging to " << logPath << std::endl;
+		log.open( logPath );
+		if( !log.is_open() ) {
+			std::cout << "Error opening " << logPath << std::endl;
+			exit( -1 );
+		}
+	}
+
+	if( argc > 2 ) {
+		enableScreenshots = true;
+		screenPrefix.assign( argv[2] );
+		std::cout << "Saving screenshots with prefix " << screenPrefix << std::endl;
+	}
+		
+	
 	// Create the assembly and constructor
 	DiscreteAssembly::Ptr assembly = std::make_shared<DiscreteAssembly>();
 	AssemblyConstructor::VariableConstructor vconst =
@@ -109,20 +134,9 @@ int main() {
 
 // 	aconst.AddSlot( heightSlot );
 
-	// Add the border unary slot
-	// Unary slot only needs self
-	std::vector<DiscretePoint3> edgePoints;
-	edgePoints.emplace_back( 0, 0, 0 );
-	AssemblySlot::PotentialConstructor edgeConstructor =
-		boost::bind( &CreateEdgePotential, _1, _2, _3, _4 );
-	AssemblySlot::Ptr edgeSlot =
-		std::make_shared<AssemblySlot>( edgePoints, edgeConstructor );
-
-// 	aconst.AddSlot( edgeSlot );
-
 	// Add a repel slot
 	// Unary slot only needs self
-	ContinuousPoint3 objPos( 2, 2, 4 );
+	ContinuousPoint3 objPos( 15, 1, 15 );
 	std::vector<DiscretePoint3> repelPoints;
 	repelPoints.emplace_back( 0, 0, 0 );
 	AssemblySlot::PotentialConstructor repelConstructor =
@@ -130,9 +144,8 @@ int main() {
 	AssemblySlot::Ptr repelSlot =
 		std::make_shared<AssemblySlot>( repelPoints, repelConstructor );
 
-// 	aconst.AddSlot( repelSlot );
+ 	aconst.AddSlot( repelSlot );
 
-	
 	// Lattice range
 	int xDim = 30;
 	int yDim = 2;
@@ -164,20 +177,6 @@ int main() {
 	// Once voxels are added, add potentials
 	aconst.BuildPotentials( *assembly );
 
-	// Add a fix potential for the seed block manually
-	unsigned int seedID = assembly->GetLattice().GetNodeID( DiscretePoint3( 1, 1, 0 ) );
-	GibbsVariable::Ptr seedVar = assembly->GetField().GetVariable( seedID );
-	std::vector<unsigned int> seedClique;
-	seedClique.push_back( seedID );
-	PotentialFixed::Ptr fixPot =
-		std::make_shared<PotentialFixed>( assembly->GetField(),
-										  assembly->GetField().NumPotentials(),
-										  seedClique, BLOCK_FULL );
-	
-	seedVar->AddPotential( fixPot->id );
-	assembly->GetField().AddPotential( fixPot );
-	std::dynamic_pointer_cast<BlockVariable>( seedVar )->SetState( BLOCK_FULL );
-	
 	std::cout << "Created " << assembly->GetField().NumPotentials() << " potentials." << std::endl;
 
 	// Visualize the assembly
@@ -191,8 +190,6 @@ int main() {
 					 boost::ref(assembly->GetLattice()), _1 );
 	box.Iterate( intOp );
 
-	std::cout << interiorIDs.size() << std::endl;
-	
 	MCMCSampler mcmcSampler;
 	mcmcSampler.SetIndexSet( interiorIDs );
 	AssemblySampler aSampler( mcmcSampler );
@@ -221,20 +218,51 @@ int main() {
 // 		usleep( 1E5 );
 // 	}
 
-	tsearch.SetNumSuccessors( 5 );
-	tsearch.SetSampleDepth( 50 );
+	tsearch.SetNumSuccessors( 20 );
+	tsearch.SetSampleDepth( 10 );
 	tsearch.Add( assembly );
-	tsearch.SetMaxQueueSize( 1000 );
+	tsearch.SetMaxQueueSize( 30 );
+
+	aviz.Visualize( *assembly );
+	usleep( 3E7 );
+
+	log << "Iteration Cost LogPotential TotalBlocks" << std::endl;
 	
 	while( true ) {
 
 		DiscreteAssembly::Ptr best = tsearch.Next();
 
+		SearchProperties properties = tsearch.ComputeProperties( *best );
+		double cost = tsearch.ComputeCost( properties );
+		double logPot = best->GetField().CalculateLogPotential();
+		
+		if( enableLogging ) {
+ 			log << sampleCounter << " " << cost << " " << logPot << " " << properties.totalBlocks << std::endl;
+		}
+		
+		std::cout << "Iteration " << sampleCounter << std::endl;
+		std::cout << "\tCost: " << cost << std::endl;
+		std::cout << "\tLog Energy: " << logPot << std::endl;
+		std::cout << "\tDesired COM: " << properties.desiredCOM << std::endl;
+		std::cout << "\tVolume: " << properties.volume << std::endl;
+		std::cout << "\tCOM: " << properties.com << std::endl;
+		std::cout << "\tTotal Blocks: " << properties.totalBlocks << std::endl;
+		std::cout << "\tTotalMass: " << properties.totalMass << std::endl;
+		std::cout << "\tWavefront Cost: " << properties.totalWavefront << std::endl;
+		std::cout << "\tzFill: " << properties.zFill << std::endl;
 		sampleCounter++;
-		std::cout << "# successors: " << tsearch.Size() << std::endl;
-		std::cout << "Generated " << sampleCounter << " successors" << std::endl;
-		if( sampleCounter % 10 == 0 ) {
+
+		if( sampleCounter % 5 == 0 ) {
 			aviz.Visualize( *best );
+		}
+		
+		if( sampleCounter % 100 == 0 ) {
+
+			if( enableScreenshots ) {
+				std::stringstream ss;
+				ss << screenPrefix << sampleCounter << ".png" << std::endl;
+				rman.RequestScreenshot( ss.str() );
+			}
 		}
 
 		usleep( 1E5 );

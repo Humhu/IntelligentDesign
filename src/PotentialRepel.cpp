@@ -48,14 +48,14 @@ namespace intelligent {
 		// here, we only look at the value for ourself
 		double me = blanket_val[0];
 		
-		double threshold = 3;
+		double threshold = 10;
 		
 		double prob = 1;
 		
 		if ( me != 0 ) {
 			if (distance < threshold ) {
 				//prob = distance / threshold;
-				prob = std::exp( -3*distance );
+				prob = std::exp( -3*( threshold - distance ) );
 			}
 		}
 			

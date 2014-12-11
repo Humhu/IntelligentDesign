@@ -66,6 +66,7 @@ namespace intelligent {
 	};
 
 	struct ScreenshotRequest : public RenderRequest {
+		std::string filename;
 		bool screenshot;
 	};
 	
@@ -172,7 +173,7 @@ namespace intelligent {
 						 unsigned int xSize, unsigned int ySize );
 
 		void Clear();
-		void RequestScreenshot();
+		void RequestScreenshot( const std::string& fname );
 		
 		void QueueRenderRequest( RenderRequestVariant& request );
 		void QueueRenderRequests( const std::vector<RenderRequestVariant>& requests );
@@ -197,7 +198,6 @@ namespace intelligent {
 		vtkSmartPointer<vtkPNGWriter> pngWriter;
 		vtkSmartPointer<KeyPressInteractorStyle> keypressStyle;
 		std::string screenshotPrefix;
-		unsigned int screenshotCounter;
 		
 		XtAppContext xAppContext;
 		boost::thread interactorThread;
@@ -213,7 +213,7 @@ namespace intelligent {
 
 		void ProcessRequestQueue();
 		void InteractorLoop();
-		void CaptureScreenshot();
+		void CaptureScreenshot( const std::string& filename );
 		
 	};
 }

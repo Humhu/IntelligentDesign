@@ -5,15 +5,20 @@ namespace intelligent {
 
 	AssemblyVisualizer::AssemblyVisualizer( RendererManager& _renderer ) :
 		renderer( _renderer ),
-		requestCounter( 0 ) {}
+		requestCounter( 0 ),
+		showOutlines( false ) {}
 
+	void AssemblyVisualizer::SetOutlines( bool out ) {
+		showOutlines = out;
+	}
+		
 	void AssemblyVisualizer::Visualize( const DiscreteAssembly& assembly ) {
 
 		std::vector<RenderRequestVariant> requests;
 		
 		ClearRequest crequest;
-		RenderRequestVariant creq = crequest;
-		requests.push_back( creq );
+		RenderRequestVariant clreq = crequest;
+		requests.push_back( clreq );
 		
 		requestCounter = 0;
 		
@@ -41,6 +46,25 @@ namespace intelligent {
 		RenderRequestVariant areqv = areq;
 		requests.push_back( areqv );
 
+		if( !showOutlines ) {
+			CubeRenderRequest creq;
+			creq.id = requestCounter++;
+			creq.color = Color( 0, 0, 0 );
+			creq.useLighting = false;
+			creq.showEdges = true;
+			creq.edgeColor = Color( 0, 0, 0 );
+
+			creq.center[0] = 0.5*(latticeBounds.maxX + latticeBounds.minX);
+			creq.center[1] = 0.5*(latticeBounds.maxY + latticeBounds.minY);
+			creq.center[2] = 0.5*(latticeBounds.maxZ + latticeBounds.minZ);
+			creq.lengths[0] = latticeBounds.maxX - latticeBounds.minX;
+			creq.lengths[1] = latticeBounds.maxY - latticeBounds.minY;
+			creq.lengths[2] = latticeBounds.maxZ - latticeBounds.minZ;
+			creq.representation = RENDER_GEOM_WIREFRAME;
+			RenderRequestVariant creqv = creq;
+			requests.push_back( creqv );
+		}
+		
 		renderer.ClearRenderRequests();
 		renderer.QueueRenderRequests( requests );
 	}
@@ -73,6 +97,7 @@ namespace intelligent {
 		BlockType state = block->GetState();
 		switch( state ) {
 			case BLOCK_EMPTY:
+				if( !showOutlines ) { return; }
 				creq.color = Color( 0, 0, 0 );
 				creq.representation = RENDER_GEOM_WIREFRAME;
 				break;

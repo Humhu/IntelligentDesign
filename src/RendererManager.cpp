@@ -226,7 +226,7 @@ namespace intelligent {
 	}
 
 	void RenderRequestVisitor::operator()( const ScreenshotRequest& request ) {
-		manager.CaptureScreenshot();
+		manager.CaptureScreenshot( request.filename );
 	}
 
 	void RenderRequestVisitor::SetActorProperties( vtkSmartPointer<vtkActor>& actor,
@@ -313,8 +313,7 @@ namespace intelligent {
 		windowToImage( vtkWindowToImageFilter::New() ),
 		pngWriter( vtkPNGWriter::New() ),
 		keypressStyle( vtkSmartPointer<KeyPressInteractorStyle>::New() ),
-		screenshotCounter( 0 ),
-		screenshotPrefix( "Screenshot" ) {
+		screenshotPrefix( "Screenshot.png" ) {
 
 		XInitThreads();
 		XtToolkitInitialize(); // TODO Do only once?
@@ -336,7 +335,7 @@ namespace intelligent {
 		renderInteractor->SetInteractorStyle( keypressStyle );
 		
 		keypressStyle->SetCurrentRenderer(renderer);
-		keypressStyle->SetCallback( boost::bind( &RendererManager::CaptureScreenshot, this ) );
+		keypressStyle->SetCallback( boost::bind( &RendererManager::CaptureScreenshot, this, screenshotPrefix ) );
 		
 		// Screenshot setup
 		windowToImage->SetInput(renderWindow);
@@ -395,8 +394,9 @@ namespace intelligent {
 		QueueRenderRequest( vreq );
 	}
 
-	void RendererManager::RequestScreenshot() {
+	void RendererManager::RequestScreenshot( const std::string& fname ) {
 		ScreenshotRequest request;
+		request.filename = fname;
 		RenderRequestVariant vreq = request;
 		QueueRenderRequest( vreq );
 	}
@@ -413,18 +413,14 @@ namespace intelligent {
 		XtAppMainLoop( xAppContext );
 	}
 
-	void RendererManager::CaptureScreenshot() {
+	void RendererManager::CaptureScreenshot( const std::string& filename ) {
 
 		windowToImage->Modified();
 		windowToImage->Update();
 
-		std::stringstream ss;
-		ss << screenshotPrefix << screenshotCounter << ".png";
-		screenshotCounter++;
-
-		std::cout << "Screenshot saved to " << ss.str() << std::endl;
+		std::cout << "Screenshot saved to " << filename << std::endl;
 		
-		pngWriter->SetFileName( ss.str().c_str() );
+		pngWriter->SetFileName( filename.c_str() );
 		pngWriter->Write();
 	}
 	

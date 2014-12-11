@@ -7,12 +7,6 @@
 #include <cmath>
 
 namespace intelligent {
-
-	ContinuousPoint3::ContinuousPoint3() :
-		x(0), y(0), z(0) {}
-		
-	ContinuousPoint3::ContinuousPoint3( double _x, double _y, double _z ) :
-		x( _x ), y( _y ), z( _z ) {}
 	
 	PotentialCOM::PotentialCOM(const GibbsField & _field, unsigned int _id,
 		const std::vector<unsigned int> & _vids, const Lattice & _lattice) 

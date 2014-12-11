@@ -15,11 +15,15 @@ namespace intelligent {
 		AssemblyVisualizer( RendererManager& _renderer );
 
 		void Visualize( const DiscreteAssembly& assembly );
+
+		void SetOutlines( bool out );
 		
 	private:
 
 		unsigned int requestCounter;
 		RendererManager& renderer;
+
+		bool showOutlines;
 
 		void VisualizePoint( const DiscreteAssembly& assembly,
 							 std::vector<RenderRequestVariant>& requests,

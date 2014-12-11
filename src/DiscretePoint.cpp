@@ -6,6 +6,17 @@
 
 namespace intelligent {
 
+	ContinuousPoint3::ContinuousPoint3() :
+	x(0), y(0), z(0) {}
+	
+	ContinuousPoint3::ContinuousPoint3( double _x, double _y, double _z ) :
+	x( _x ), y( _y ), z( _z ) {}
+	
+	std::ostream& operator<<( std::ostream& os, const ContinuousPoint3& point ) {
+		os << "(" << point.x << ", " << point.y << ", " << point.z << ")";
+		return os;
+	}
+	
 	DiscretePoint3::DiscretePoint3() :
 		x( 0 ), y( 0 ), z( 0 ) {}
 

@@ -40,7 +40,8 @@ namespace intelligent {
 	}
 
 	std::vector<unsigned int> Lattice::GetNodeIDs() const {
-		std::vector<unsigned int> ids( positionIDMap.size() );
+		std::vector<unsigned int> ids;
+		
 		BOOST_FOREACH( const PositionIDMap::value_type& item, positionIDMap ) {
 			ids.push_back( item.second );
 		}

@@ -8,6 +8,17 @@
 #include <vector>
 
 namespace intelligent {
+
+	struct ContinuousPoint3 {
+		double x;
+		double y;
+		double z;
+		
+		ContinuousPoint3();
+		ContinuousPoint3( double _x, double _y, double _z );
+	};
+
+	std::ostream& operator<<( std::ostream& os, const ContinuousPoint3& point );
 	
 	/*! \brief Discrete 3D coordinates. */
 	struct DiscretePoint3 {

@@ -133,5 +133,14 @@ namespace intelligent {
 	std::size_t GibbsField::NumPotentials() const {
 		return potentials.size();
 	}
+
+	double GibbsField::CalculateLogPotential() {
+		double sum = 0;
+		BOOST_FOREACH( const PotentialMap::value_type& item, potentials ) {
+			double pot = item.second->CalculatePotential();
+			sum += std::log( pot );
+		}
+		return sum;
+	}
 	
 }
