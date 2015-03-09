@@ -48,7 +48,7 @@ namespace intelligent {
 		// here, we only look at the value for ourself
 		double me = blanket_val[0];
 		
-		double threshold = 10;
+		double threshold = 4;
 		
 		double prob = 1;
 		

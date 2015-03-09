@@ -104,7 +104,7 @@ namespace intelligent {
 		
 		properties.desiredCOM.x = bbox.minX + wx/2;
 		properties.desiredCOM.y = bbox.minY + wy/2;
-		properties.desiredCOM.z = bbox.minZ;
+		properties.desiredCOM.z = bbox.minZ + 1;
 
 		BlockVariable::Ptr blockVariable;
 		DiscretePoint3 blockPosition;

@@ -136,7 +136,7 @@ int main( int argc, char* argv[] ) {
 
 	// Add a repel slot
 	// Unary slot only needs self
-	ContinuousPoint3 objPos( 15, 1, 15 );
+	ContinuousPoint3 objPos( 4, 4, 0 );
 	std::vector<DiscretePoint3> repelPoints;
 	repelPoints.emplace_back( 0, 0, 0 );
 	AssemblySlot::PotentialConstructor repelConstructor =
@@ -146,10 +146,44 @@ int main( int argc, char* argv[] ) {
 
  	aconst.AddSlot( repelSlot );
 
+	objPos.x = 16;
+	AssemblySlot::PotentialConstructor repelConstructor2 =
+		boost::bind( &CreateRepelPotential, _1, _2, _3, _4, objPos);
+	AssemblySlot::Ptr repelSlot2 =
+		std::make_shared<AssemblySlot>( repelPoints, repelConstructor2 );
+
+	aconst.AddSlot( repelSlot2 );
+
+	objPos.y = 16;
+	AssemblySlot::PotentialConstructor repelConstructor3 =
+		boost::bind( &CreateRepelPotential, _1, _2, _3, _4, objPos);
+	AssemblySlot::Ptr repelSlot3 =
+		std::make_shared<AssemblySlot>( repelPoints, repelConstructor3 );
+
+	aconst.AddSlot( repelSlot3 );
+
+	objPos.x = 4;
+	AssemblySlot::PotentialConstructor repelConstructor4 =
+		boost::bind( &CreateRepelPotential, _1, _2, _3, _4, objPos);
+	AssemblySlot::Ptr repelSlot4 =
+		std::make_shared<AssemblySlot>( repelPoints, repelConstructor4 );
+
+	aconst.AddSlot( repelSlot4 );
+
+	objPos.x = 10;
+	objPos.y = 10;
+	objPos.z = 10;
+	AssemblySlot::PotentialConstructor repelConstructor5 =
+		boost::bind( &CreateRepelPotential, _1, _2, _3, _4, objPos);
+	AssemblySlot::Ptr repelSlot5 =
+	std::make_shared<AssemblySlot>( repelPoints, repelConstructor5 );
+	
+	aconst.AddSlot( repelSlot5 );
+	
 	// Lattice range
-	int xDim = 30;
-	int yDim = 2;
-	int zDim = 30;
+	int xDim = 20;
+	int yDim = 20;
+	int zDim = 20;
 	
 	std::vector<DiscretePoint3> corners;
 	corners.emplace_back( 0, 0, 0 );
@@ -214,7 +248,7 @@ int main( int argc, char* argv[] ) {
 // 			aviz.Visualize( *assembly );
 // 			rman.RequestScreenshot();
 // 		}
-// 		
+// 
 // 		usleep( 1E5 );
 // 	}
 
@@ -230,7 +264,13 @@ int main( int argc, char* argv[] ) {
 	
 	while( true ) {
 
+		// Sample using tree search
 		DiscreteAssembly::Ptr best = tsearch.Next();
+
+		// Sample using sampling!
+// 		std::vector<DiscreteAssembly::Ptr> samples = aSampler.Sample( 1, 10 );
+// 		DiscreteAssembly::Ptr best = samples[0];
+// 		aSampler.SetBase( best );
 
 		SearchProperties properties = tsearch.ComputeProperties( *best );
 		double cost = tsearch.ComputeCost( properties );
